@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<title>目標心率與說話測試</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: one mobile column, IG-card language — navy header bars, white cards on warm grey, orange for the HRR method.
+   Two modes: 現場 (field: inputs → one target zone → intensity buttons → log) and 教學 (everything). */
+:root{
+  --bg:#EFEEEB; --card:#FFFFFF; --ink:#1F2A37; --muted:#5B6573; --line:#D9D6D0;
+  --navy:#2B3A4E; --on-navy:#FFFFFF; --slate:#8D9AAC; --slate-soft:#E4E8EE;
+  --orange:#D9762B; --orange-soft:#F8E4D3; --orange-ink:#A9561A;
+  --ok:#2E7D4F; --ok-soft:#DCEFE3; --high:#B4441F; --high-soft:#F7DDD3; --low:#2F5E8C; --low-soft:#DCE6F1;
+  --font-ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-num:"Barlow","Noto Sans TC",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14181E; --card:#1D232C; --ink:#ECEFF3; --muted:#A3ACB8; --line:#313945;
+  --navy:#3A4E68; --on-navy:#FFFFFF; --slate:#66758A; --slate-soft:#29313C;
+  --orange:#EE9147; --orange-soft:#3A2A1D; --orange-ink:#F4AA6C;
+  --ok:#72C795; --ok-soft:#1D3327; --high:#F0896A; --high-soft:#3B231C; --low:#86B4E2; --low-soft:#1E2C3A;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181E; --card:#1D232C; --ink:#ECEFF3; --muted:#A3ACB8; --line:#313945;
+  --navy:#3A4E68; --on-navy:#FFFFFF; --slate:#66758A; --slate-soft:#29313C;
+  --orange:#EE9147; --orange-soft:#3A2A1D; --orange-ink:#F4AA6C;
+  --ok:#72C795; --ok-soft:#1D3327; --high:#F0896A; --high-soft:#3B231C; --low:#86B4E2; --low-soft:#1E2C3A;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:600px;margin:0 auto;display:grid;gap:18px}
+h1,h2,h3{margin:0;text-wrap:balance}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+header{display:grid;gap:6px;border-left:5px solid var(--orange);padding-left:14px}
+.eyebrow{color:var(--orange-ink);font-weight:700;font-size:14px;letter-spacing:.04em}
+header h1{font-size:28px;font-weight:900;line-height:1.25}
+header p{margin:0;color:var(--muted);font-size:15px}
+.card{background:var(--card);border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
+.sec-title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sec-title h2{font-size:21px;font-weight:900}
+.sec-title .step{font-family:var(--font-num);font-weight:700;color:var(--orange);font-size:22px}
+.sub{color:var(--muted);font-size:14px;margin:0}
+label,.lab{font-weight:700;font-size:15px}
+.field{display:grid;gap:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:420px){.row2{grid-template-columns:1fr}}
+input[type=number],input[type=text]{width:100%;font:inherit;font-size:18px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.hint{font-size:13px;color:var(--muted)}
+.checks{display:grid;gap:8px}
+.check{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1.5px solid var(--line);border-radius:8px;cursor:pointer}
+.check input{width:22px;height:22px;margin-top:2px;accent-color:var(--navy);flex:none}
+.check b{display:block}
+.check span{font-size:13px;color:var(--muted)}
+.err{color:var(--high);font-weight:700;font-size:14px}
+.demo{font-size:13px;color:var(--orange-ink);background:var(--orange-soft);padding:6px 10px;border-radius:6px;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.demo button{font:inherit;font-size:13px;border:0;background:none;color:var(--orange-ink);text-decoration:underline;cursor:pointer;padding:0}
+/* toggles */
+.seg-ctl{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1.5px solid var(--navy);border-radius:8px;overflow:hidden}
+.seg-ctl button{font:inherit;font-weight:700;font-size:16px;padding:11px 8px;border:0;background:var(--card);color:var(--ink);cursor:pointer}
+.seg-ctl button+button{border-left:1.5px solid var(--navy)}
+.seg-ctl button[aria-pressed=true]{background:var(--navy);color:var(--on-navy)}
+.seg-ctl button:disabled{color:var(--muted);cursor:not-allowed;background:var(--slate-soft)}
+.mode-ctl button{font-size:15px;padding:9px 8px}
+/* empty */
+.empty{color:var(--muted);font-size:15px;padding:6px 0}
+/* target (field) */
+.targets{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.tz{border-radius:8px;padding:12px 14px;display:grid;gap:2px;background:var(--orange-soft)}
+.tz.vig{background:var(--slate-soft)}
+.tz .k{font-size:13px;font-weight:700;color:var(--muted)}
+.tz .r{font-family:var(--font-num);font-weight:700;font-size:36px;line-height:1.1;color:var(--ink)}
+.tz .r small{font-family:var(--font-ui);font-size:13px;color:var(--muted);margin-left:4px}
+.tz .w{font-size:12px;color:var(--muted)}
+.meta{font-size:14px;color:var(--muted)}
+.meta b{color:var(--ink);font-family:var(--font-num)}
+/* decision path */
+.path{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.path li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;border:1.5px solid var(--line);color:var(--muted)}
+.path li .q{font-size:14px}
+.path li .f{font-family:var(--font-num);font-weight:600}
+.path li.on{border-color:var(--orange);background:var(--orange-soft);color:var(--ink)}
+.path li.on .f{color:var(--orange-ink)}
+.path .tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--slate-soft);color:var(--muted)}
+.path li.on .tag{background:var(--orange);color:#fff}
+.big{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.big .v{font-family:var(--font-num);font-weight:700;font-size:48px;line-height:1}
+.big .u{font-weight:700;color:var(--muted)}
+.big .calc{width:100%;font-family:var(--font-num);color:var(--muted)}
+/* methods */
+.methods{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.methods{grid-template-columns:1fr}}
+.m{border-radius:8px;overflow:hidden;border:1.5px solid var(--line);display:grid;min-width:0}
+.m h3{font-size:16px;font-weight:700;padding:8px 12px;text-align:center}
+.m.hrr h3{background:var(--navy);color:var(--on-navy)}
+.m.max h3{background:var(--slate);color:#fff}
+.m .body{padding:12px;display:grid;gap:10px}
+.m .formula{font-size:14px;color:var(--muted);text-align:center}
+.zone{border-radius:6px;padding:10px;display:grid;gap:2px;text-align:center}
+.m.hrr .zone{background:var(--orange-soft)}
+.m.max .zone{background:var(--slate-soft)}
+.zone .k{font-size:13px;font-weight:700;color:var(--muted)}
+.zone .r{font-family:var(--font-num);font-weight:700;font-size:30px;line-height:1.1}
+.m.hrr .zone .r{color:var(--orange-ink)}
+.zone .r small{font-family:var(--font-ui);font-size:13px;font-weight:700;color:var(--muted);margin-left:4px}
+.zone .w{font-family:var(--font-num);font-size:13px;color:var(--muted)}
+.m .none{padding:14px;color:var(--muted);font-size:14px;text-align:center}
+.diff{font-weight:900;font-size:16px}
+/* chart */
+.chart{display:grid;gap:4px}
+.chart-row{display:grid;grid-template-columns:86px 1fr;gap:8px;align-items:center}
+.chart-row .lbl{font-size:13px;font-weight:700}
+.chart-row .lbl.hrr{color:var(--orange-ink)}
+.track{position:relative;height:30px}
+.seg{position:absolute;top:6px;height:18px;border-radius:4px}
+.seg.hrr.mod{background:var(--orange-soft);border:2px solid var(--orange)}
+.seg.hrr.vig{background:var(--orange)}
+.seg.max.mod{background:var(--slate-soft);border:2px solid var(--slate)}
+.seg.max.vig{background:var(--slate)}
+.mark{position:absolute;top:-4px;bottom:-4px;border-left:2px dashed var(--muted)}
+.axis{position:relative;height:22px;border-top:1.5px solid var(--muted);font-family:var(--font-num);font-size:12px;color:var(--muted)}
+.axis span{position:absolute;top:2px;transform:translateX(-50%)}
+.marks-top{position:relative;height:18px;font-size:12px;font-weight:700;color:var(--orange-ink)}
+.marks-top span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.note{border-left:4px solid var(--orange);background:var(--orange-soft);padding:10px 12px;border-radius:0 8px 8px 0;font-size:14px;display:grid;gap:4px}
+.note b{color:var(--orange-ink)}
+.note.plain{border-left-color:var(--slate);background:var(--slate-soft)}
+.note.plain b{color:var(--ink)}
+.notes{display:grid;gap:8px}
+/* weekly */
+.week{display:grid;gap:10px}
+.week .grp{border:1.5px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:4px;color:var(--muted)}
+.week .grp.on{border-color:var(--navy);color:var(--ink)}
+.week .grp h3{font-size:16px;display:flex;justify-content:space-between;gap:8px}
+.week .grp .you{font-size:12px;background:var(--navy);color:var(--on-navy);padding:2px 8px;border-radius:999px;font-weight:700}
+.week ul{margin:0;padding-left:20px}
+/* field judgement */
+.script{background:var(--navy);color:var(--on-navy);border-radius:10px;padding:16px 18px;display:grid;gap:6px}
+.script .k{font-size:13px;font-weight:700;opacity:.8}
+.script p{margin:0;font-size:21px;font-weight:700;line-height:1.6}
+.lvls{display:grid;gap:8px}
+.lvls button{font:inherit;text-align:left;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:grid;grid-template-columns:76px 1fr;align-items:center;gap:12px;padding:10px 14px}
+.lvls .sc{font-family:var(--font-num);font-weight:700;font-size:28px;line-height:1;color:var(--navy);text-align:center}
+:root[data-theme="dark"] .lvls .sc{color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lvls .sc{color:var(--ink)}}
+.lvls .tx{display:grid;gap:2px;min-width:0}
+.lvls .tx b{font-size:18px}
+.lvls .tx span{font-size:14px;color:var(--muted);line-height:1.5}
+.lvls.warn button[data-l="4"]{border-color:var(--high)}
+.lvls.warn button[data-l="4"] .sc{color:var(--high)}
+.lvls button:hover{border-color:var(--navy)}
+.lvls button:active{transform:translateY(1px)}
+.lvls button.last{background:var(--slate-soft)}
+.stop-box{border:2px solid var(--high);border-radius:10px;padding:12px 14px;display:grid;gap:4px;font-size:14px}
+.stop-box b{color:var(--high);font-size:15px}
+.stop-box ul{margin:0;padding-left:20px}
+.verdict{border-radius:10px;padding:14px 16px;display:grid;gap:4px}
+.verdict .t{font-weight:900;font-size:21px}
+.verdict.low{background:var(--low-soft);color:var(--low)}
+.verdict.ok{background:var(--ok-soft);color:var(--ok)}
+.verdict.high{background:var(--high-soft);color:var(--high)}
+.verdict.stop{background:var(--high);color:#fff}
+.verdict .d{color:var(--ink);font-size:16px}
+.verdict.stop .d{color:#fff}
+.log{display:grid;gap:8px}
+.log-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.log-head h3{font-size:17px}
+.btn{font:inherit;font-weight:700;font-size:15px;padding:9px 14px;border-radius:8px;border:1.5px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.btn.danger{background:var(--high);border-color:var(--high);color:#fff}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:700;font-size:13px}
+td.num{font-family:var(--font-num)}
+.pill{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+.pill.low{background:var(--low-soft);color:var(--low)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.high{background:var(--high-soft);color:var(--high)}
+.pill.stop{background:var(--high);color:#fff}
+.empty-log{color:var(--muted);font-size:14px;padding:6px 0}
+details.xwalk{border:1.5px solid var(--line);border-radius:8px;padding:10px 12px}
+details.xwalk summary{font-weight:700;cursor:pointer}
+details.xwalk[open] summary{margin-bottom:10px}
+details.xwalk .inner{display:grid;gap:10px}
+details.xwalk td,details.xwalk th{white-space:normal;vertical-align:top}
+details.xwalk p{margin:0;font-size:13px;color:var(--muted)}
+footer{font-size:12px;color:var(--muted);display:grid;gap:8px}
+footer ol{margin:0;padding-left:18px;display:grid;gap:4px}
+footer a{color:inherit;overflow-wrap:anywhere}
+.sign{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:700;color:var(--ink);font-size:13px}
+.sign span:last-child{color:var(--orange-ink)}
+body.field .teach{display:none}
+@media (prefers-reduced-motion:no-preference){.verdict{animation:pop .18s ease-out}@keyframes pop{from{transform:scale(.98);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">練健康｜教練用工具</div>
+    <h1>目標心率與現場強度判斷</h1>
+    <p>輸入學員資料算出目標心率，訓練中用同一把 1–10 分的尺判斷強度：有氧看說話，肌力看還能再做幾下。</p>
+  </header>
+
+  <div class="seg-ctl mode-ctl" role="group" aria-label="顯示模式">
+    <button type="button" id="mField" aria-pressed="true">現場模式</button>
+    <button type="button" id="mTeach" aria-pressed="false">教學模式（顯示計算過程）</button>
+  </div>
+
+  <!-- INPUT -->
+  <section class="card" aria-labelledby="in-h">
+    <div class="sec-title"><h2 id="in-h">學員資料</h2></div>
+    <div class="demo" id="demoNote" hidden><span>目前是範例：70 歲中風個案、有吃 β 阻斷劑、安靜心率 80</span><button type="button" id="clearDemo">清空，輸入我的學員</button></div>
+    <div class="row2">
+      <div class="field">
+        <label for="age">年齡（必填）</label>
+        <input id="age" type="number" inputmode="numeric" min="18" max="100">
+        <span class="hint">限 18–100 歲</span>
+      </div>
+      <div class="field">
+        <label for="rhr">安靜心率（選填）</label>
+        <input id="rhr" type="number" inputmode="numeric" min="40" max="120">
+        <span class="hint">坐著休息 5 分鐘後量 1 分鐘；有吃 β 阻斷劑，在平常服藥的狀態下量</span>
+      </div>
+    </div>
+    <div class="field">
+      <label for="measured">實測最大心率（選填）</label>
+      <input id="measured" type="number" inputmode="numeric" min="90" max="230" placeholder="有做最大運動測試才填">
+    </div>
+    <div class="checks">
+      <label class="check" for="beta"><input id="beta" type="checkbox"><div><b>有吃 β 阻斷劑（beta-blocker）</b><span>常見於高血壓、心臟病用藥，會壓低心率</span></div></label>
+      <label class="check" for="stroke"><input id="stroke" type="checkbox"><div><b>中風或心血管疾病</b><span>改用中風指引的區間，只顯示中等強度；需有醫師同意</span></div></label>
+    </div>
+    <div class="note plain"><b>心率不準的情況</b>心律不整（例如心房顫動）或吃其他會影響心率的心臟用藥時，心率只能參考，請以下方的強度判斷為主。（教練實務）</div>
+    <div class="err" id="err" hidden></div>
+  </section>
+
+  <!-- TARGET (field + teach summary) -->
+  <section class="card" aria-labelledby="tg-h">
+    <div class="sec-title"><h2 id="tg-h">目標心率</h2></div>
+    <div id="tgEmpty" class="empty">輸入年齡後，這裡會顯示中等與高強度的目標心率。</div>
+    <div id="tgBody" hidden>
+      <div class="targets" id="targets"></div>
+      <div class="meta" id="tgMeta"></div>
+    </div>
+    <div class="notes" id="notes"></div>
+  </section>
+
+  <!-- TEACH: STEP 1 -->
+  <section class="card teach" id="s1" aria-labelledby="s1-h">
+    <div class="sec-title"><span class="step">①</span><h2 id="s1-h">先找最大心率</h2></div>
+    <ol class="path" id="path">
+      <li data-k="measured"><span class="tag">1</span><div><div class="q">有做最大運動測試？</div><div class="f">直接用測到的數值</div></div></li>
+      <li data-k="beta"><span class="tag">2</span><div><div class="q">有吃 β 阻斷劑？</div><div class="f">164 − 0.7 × 年齡</div></div></li>
+      <li data-k="general"><span class="tag">3</span><div><div class="q">以上都沒有</div><div class="f">220 − 年齡</div></div></li>
+    </ol>
+    <div class="big" id="hmBig"><span class="v" id="hrmax">—</span><span class="u">下／分</span><span class="calc" id="hrmaxCalc"></span></div>
+  </section>
+
+  <!-- TEACH: STEP 2 -->
+  <section class="card teach" id="s2" aria-labelledby="s2-h">
+    <div class="sec-title"><span class="step">②</span><h2 id="s2-h">再算目標心率</h2></div>
+    <div id="s2Empty" class="empty">輸入年齡後顯示兩種算法的比較。</div>
+    <div id="s2Body" style="display:grid;gap:14px" hidden>
+      <p class="sub" id="setName"></p>
+      <div class="methods">
+        <div class="m hrr"><h3>心率儲備法（HRR）</h3><div class="body" id="hrrBody"></div></div>
+        <div class="m max"><h3>最大心率百分比（%HRmax）</h3><div class="body" id="maxBody"></div></div>
+      </div>
+      <div class="diff" id="diff"></div>
+      <div class="chart" id="chart" aria-hidden="true"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <!-- TEACH: WEEKLY -->
+  <section class="card teach" aria-labelledby="wk-h">
+    <div class="sec-title"><h2 id="wk-h">每週建議量</h2></div>
+    <div class="week" id="week"></div>
+  </section>
+
+  <!-- FIELD JUDGEMENT -->
+  <section class="card" aria-labelledby="tt-h">
+    <div class="sec-title"><h2 id="tt-h">現場強度判斷</h2></div>
+    <div>
+      <div class="field">
+        <label for="hrNow">當下心率（選填）</label>
+        <input id="hrNow" type="number" inputmode="numeric" min="40" max="230" placeholder="下／分">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <span class="lab">訓練類型</span>
+        <div class="seg-ctl" role="group" aria-label="訓練類型">
+          <button type="button" id="tAer" aria-pressed="true">有氧</button>
+          <button type="button" id="tStr" aria-pressed="false">肌力</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="lab">今日目標</span>
+        <div class="seg-ctl" role="group" aria-label="今日目標強度">
+          <button type="button" id="gMod" aria-pressed="true">中等 5–6</button>
+          <button type="button" id="gVig" aria-pressed="false">高強度 7–8</button>
+        </div>
+      </div>
+    </div>
+    <span class="hint" id="goalHint"></span>
+    <div class="note plain" id="timing"></div>
+    <div class="script" id="script">
+      <span class="k">直接問學員</span>
+      <p id="askQ"></p>
+      <span class="k" id="askN"></span>
+    </div>
+    <div class="note" id="speechNote" hidden><b>中風個案注意</b>有失語或構音困難時，講不出話可能是語言障礙而不是喘，不要用說話判斷，改用心率，或請學員用手指比 1–10 分。</div>
+    <div class="field">
+      <span class="lab">現在是幾分？</span>
+      <div class="lvls" role="group" aria-label="強度分級" id="lvls"></div>
+      <span class="hint">照學員的回答點，點了就會記錄。分數 ＋ 還能再做幾下 ＝ 10。</span>
+    </div>
+    <div class="verdict" id="verdict" hidden><span class="t" id="vT"></span><span class="d" id="vD"></span></div>
+    <div class="stop-box">
+      <b>出現以下狀況，立刻停止運動</b>
+      <ul>
+        <li>胸痛或胸悶，或胸痛越來越明顯</li>
+        <li>頭暈、快昏倒、走路不穩</li>
+        <li>臉色蒼白、嘴唇發紫、噁心、冒冷汗</li>
+        <li>回答混亂、答非所問</li>
+        <li>學員要求停下來</li>
+      </ul>
+      <span class="hint">異常喘、喘鳴聲、腿抽筋或明顯疲勞：先降低強度，沒改善就停止。</span>
+    </div>
+    <div class="log">
+      <div class="log-head">
+        <h3>這支手機的紀錄</h3>
+        <button type="button" class="btn" id="clearBtn">清除</button>
+      </div>
+      <div class="tbl-wrap" id="logWrap"></div>
+      <span class="hint">紀錄只存在這支手機的瀏覽器，換手機或清除瀏覽資料就會不見。</span>
+    </div>
+    <details class="xwalk teach">
+      <summary>這把尺怎麼來的</summary>
+      <div class="inner">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>分數</th><th>強度</th><th>有氧：說話</th><th>肌力：RIR</th><th>Borg 6–20</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1–4*</td><td>輕度</td><td>可以輕鬆聊天</td><td class="num">6–9*</td><td class="num">9–11</td></tr>
+            <tr><td class="num">5–6</td><td>中等</td><td>說得出完整句子</td><td class="num">4–5</td><td class="num">12–13</td></tr>
+            <tr><td class="num">7–8</td><td>高強度</td><td>只能說幾個字</td><td class="num">2–3</td><td class="num">14–17</td></tr>
+            <tr><td class="num">9–10*</td><td>最大</td><td>講不出話或只講 1–2 個字*</td><td class="num">0–1</td><td class="num">≥18</td></tr>
+          </tbody>
+        </table></div>
+        <p>有氧：說話表現依 CDC；5–6、7–8 分依 WHO 2020 與 CDC 的自覺量表；Borg 欄依 ACSM 第 12 版表 5.2。WHO 和 CDC 的量表是 0–10（CDC 定義 0 是靜坐），RIR 量表是 1–10，這裡統一用 1–10。</p>
+        <p>中風／心血管模式：依 AEROBICS 2019（MacKay-Lyons et al., 2020），中等強度是 0–10 量表 4–5 分（Borg 12–13），所以按鈕改成 1–3／4–5／6–8／9–10，RIR 同樣用相加等於 10。</p>
+        <p>肌力：分數 ＋ RIR ＝ 10。7–10 分與 Zourdos et al., 2016 的 RIR 版 RPE 相同；原量表 5–6 分寫「還剩 4–6 下」、1–4 分只寫「輕鬆」，這裡統一用相加等於 10 推算。</p>
+        <p>RIR 準確度：統合分析顯示，一般人平均會少估約 1 下；離力竭越近、每組次數越少（12 下以內）估得越準；訓練經驗的影響不大；研究對象多是健康成人，長者資料很少（Halperin et al., 2022）。推論：1–4 分離力竭最遠，RIR 最不準；長者建議搭配教練觀察動作變慢、動作走樣（教練實務）。</p>
+        <p>* 輕度 1–4 分、最大 9–10 分與「講不出話」是教練現場常用判斷或推論，不是指引的定義。有氧和肌力共用同一把尺是為了現場好溝通，研究上沒有證明兩邊同分數代表相同的生理負荷。</p>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    <div class="sign"><span>物理治療師 鄭宇劭</span><span>@lkk_ptpt</span></div>
+    <div>本工具為訓練參考，所有預估公式都有誤差，實際強度以學員反應為準，不取代醫療評估。</div>
+    <div><b>資料來源</b></div>
+    <ol>
+      <li>American College of Sports Medicine. (2025). <i>ACSM's guidelines for exercise testing and prescription</i> (12th ed.). Wolters Kluwer.</li>
+      <li>Brawner, C. A., et al. (2004). Predicting maximum heart rate among patients with coronary heart disease receiving β-adrenergic blockade therapy. <i>American Heart Journal, 148</i>(5), 910–914. <a href="https://doi.org/10.1016/j.ahj.2004.04.035" target="_blank" rel="noopener">https://doi.org/10.1016/j.ahj.2004.04.035</a></li>
+      <li>Bull, F. C., et al. (2020). World Health Organization 2020 guidelines on physical activity and sedentary behaviour. <i>British Journal of Sports Medicine, 54</i>(24), 1451–1462. <a href="https://doi.org/10.1136/bjsports-2020-102955" target="_blank" rel="noopener">https://doi.org/10.1136/bjsports-2020-102955</a></li>
+      <li>Centers for Disease Control and Prevention. (2025). <i>How to measure physical activity intensity</i>. <a href="https://www.cdc.gov/physical-activity-basics/measuring/index.html" target="_blank" rel="noopener">https://www.cdc.gov/physical-activity-basics/measuring/index.html</a></li>
+      <li>Halperin, I., et al. (2022). Accuracy in predicting repetitions to task failure in resistance exercise: A scoping review and exploratory meta-analysis. <i>Sports Medicine, 52</i>, 377–390. <a href="https://doi.org/10.1007/s40279-021-01559-x" target="_blank" rel="noopener">https://doi.org/10.1007/s40279-021-01559-x</a></li>
+      <li>Journal of Sports Science and Medicine. (2005). Indications for terminating exercise (adapted from ACSM, 2000) [Table 7]. <i>Journal of Sports Science and Medicine</i>, Suppl. 7. <a href="https://www.jssm.org/suppls/7/T7.htm" target="_blank" rel="noopener">https://www.jssm.org/suppls/7/T7.htm</a></li>
+      <li>Lung Association Canada. (n.d.). <i>Exercise intensity test</i>. <a href="https://www.lung.ca/sites/default/files/VPR/Exercise%20Intensity%20Test.pdf" target="_blank" rel="noopener">https://www.lung.ca/sites/default/files/VPR/Exercise%20Intensity%20Test.pdf</a></li>
+      <li>MacKay-Lyons, M., et al. (2020). Aerobic exercise recommendations to optimize best practices in care after stroke: AEROBICS 2019 update. <i>Physical Therapy, 100</i>(1), 149–156. <a href="https://doi.org/10.1093/ptj/pzz153" target="_blank" rel="noopener">https://doi.org/10.1093/ptj/pzz153</a></li>
+      <li>Richards, L. G., et al. (2026). 2026 guideline for adult stroke rehabilitation and recovery: A guideline from the American Heart Association and American Stroke Association. <i>Stroke, 57</i>(10). <a href="https://doi.org/10.1161/STR.0000000000000536" target="_blank" rel="noopener">https://doi.org/10.1161/STR.0000000000000536</a></li>
+      <li>Tanaka, H., Monahan, K. D., &amp; Seals, D. R. (2001). Age-predicted maximal heart rate revisited. <i>Journal of the American College of Cardiology, 37</i>(1), 153–156. <a href="https://doi.org/10.1016/S0735-1097(00)01054-8" target="_blank" rel="noopener">https://doi.org/10.1016/S0735-1097(00)01054-8</a></li>
+      <li>Zourdos, M. C., et al. (2016). Novel resistance training–specific rating of perceived exertion scale measuring repetitions in reserve. <i>Journal of Strength and Conditioning Research, 30</i>(1), 267–275. <a href="https://doi.org/10.1519/JSC.0000000000001049" target="_blank" rel="noopener">https://doi.org/10.1519/JSC.0000000000001049</a></li>
+    </ol>
+  </footer>
+</div>
+
+<script>
+// ===== Locked rules (鎖住規則) — do not change =====
+const SETS = {
+  acsm:   { name:"一般成人：ACSM 第 12 版表 5.2", mod:{hrr:[0.40,0.59], max:[0.64,0.76]}, vig:{hrr:[0.60,0.89], max:[0.77,0.95]} },
+  stroke: { name:"中風／心血管：2026 AHA/ASA 中風指引（只顯示中等強度）", mod:{hrr:[0.40,0.60], max:[0.65,0.75]} }
+};
+const pct = a => `${Math.round(a[0]*100)}–${Math.round(a[1]*100)}%`;
+function calcHRmax(age, beta, measured){
+  if (measured) return { v: measured, src:"measured", calc:"實測值" };
+  if (beta) { const v = Math.round(164 - 0.7*age); return { v, src:"beta", calc:`164 − 0.7 × ${age} = ${v}` }; }
+  const v = 220 - age; return { v, src:"general", calc:`220 − ${age} = ${v}` };
+}
+function calcZones(inp){
+  const hm = calcHRmax(inp.age, inp.beta, inp.measured);
+  const set = inp.stroke ? SETS.stroke : SETS.acsm;
+  const hasR = inp.rhr != null;
+  const hrr = hasR ? hm.v - inp.rhr : null;
+  const z = (kind, a) => kind === "hrr"
+    ? [Math.round(hrr*a[0] + inp.rhr), Math.round(hrr*a[1] + inp.rhr)]
+    : [Math.round(hm.v*a[0]), Math.round(hm.v*a[1])];
+  const out = { hm, set, hrr, mod:{ max:z("max", set.mod.max) } };
+  if (hasR) out.mod.hrr = z("hrr", set.mod.hrr);
+  if (set.vig){
+    out.vig = { max:z("max", set.vig.max) };
+    if (hasR) out.vig.hrr = z("hrr", set.vig.hrr);
+    for (const k of ["max","hrr"]) if (out.mod[k] && out.vig[k] && out.mod[k][1] >= out.vig[k][0]) out.mod[k][1] = out.vig[k][0] - 1;
+  }
+  return out;
+}
+// One 1–10 scale. Aerobic = talk test; strength = RIR (score + RIR = 10).
+const LV = { 1:"輕度", 2:"中等", 3:"高強度", 4:"最大" };
+const SCORE = { 1:"1–4", 2:"5–6", 3:"7–8", 4:"9–10" };
+const DESC = {
+  aer: { 1:"可以輕鬆聊天", 2:"說得出完整句子", 3:"只能說幾個字", 4:"講不出話或只能講 1–2 個字" },
+  str: { 1:"還能再做 6–9 下", 2:"還能再做 4–5 下", 3:"還能再做 2–3 下", 4:"還能再做 0–1 下" }
+};
+// Stroke mode: moderate = 4–5 on the 0–10 scale (AEROBICS 2019, MacKay-Lyons et al., 2020)
+const SCORE_S = { 1:"1–3", 2:"4–5", 3:"6–8", 4:"9–10" };
+const DESC_S = {
+  aer: { 1:"可以輕鬆聊天", 2:"說得出完整句子", 3:"開始喘，句子講不完整", 4:"講不出話或只能講 1–2 個字" },
+  str: { 1:"還能再做 7–9 下", 2:"還能再做 5–6 下", 3:"還能再做 2–4 下", 4:"還能再做 0–1 下" }
+};
+const bands = stroke => stroke ? { score:SCORE_S, desc:DESC_S } : { score:SCORE, desc:DESC };
+const FEEDBACK = {
+  aer: {
+    mod:    { 1:["偏輕","可以稍微加快或加阻力","low"], 2:["剛好","在中等強度，維持就好","ok"], 3:["過頭","超過中等了，放慢一點","high"], 4:["太高","立刻降低強度","stop"] },
+    vig:    { 1:["還沒到","可以再加","low"], 2:["還沒到","目前在中等，再加一點","low"], 3:["達標","已在高強度，維持","ok"], 4:["太高","超過高強度，立刻降低強度","stop"] },
+    stroke: { 1:["偏輕","可以稍微加一點","low"], 2:["剛好","維持就好","ok"], 3:["過頭","超過中等，立刻放慢","high"], 4:["停","立刻停下休息，觀察學員狀況","stop"] }
+  },
+  str: {
+    mod:    { 1:["偏輕","下一組加一點重量或次數","low"], 2:["剛好","維持這個重量","ok"], 3:["稍重","下一組減一點重量或次數","high"], 4:["太接近力竭","下一組明顯減重，休息夠再做","high"] },
+    vig:    { 1:["太輕","下一組加重量","low"], 2:["偏輕","下一組再加一點重量","low"], 3:["達標","維持這個重量","ok"], 4:["接近力竭","下一組減一點重量","high"] },
+    stroke: { 1:["偏輕","可以加一點","low"], 2:["剛好","維持","ok"], 3:["過頭","下一組減重量或次數","high"], 4:["停","停下休息，觀察學員狀況","stop"] }
+  }
+};
+window.__calc = { calcZones, calcHRmax };
+
+// ===== UI =====
+const $ = id => document.getElementById(id);
+const el = { age:$("age"), rhr:$("rhr"), measured:$("measured"), beta:$("beta"), stroke:$("stroke") };
+const state = { res:null, inp:null, goal:"mod", type:"aer", mode:"field" };
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+function setMode(m){
+  state.mode = m; document.body.classList.toggle("field", m === "field");
+  $("mField").setAttribute("aria-pressed", m === "field"); $("mTeach").setAttribute("aria-pressed", m === "teach");
+  store.set("lkk-mode", m);
+}
+$("mField").onclick = () => setMode("field");
+$("mTeach").onclick = () => setMode("teach");
+
+function readInput(){
+  const num = e => e.value.trim() === "" ? null : Number(e.value);
+  const age = num(el.age), rhr = num(el.rhr), measured = num(el.measured);
+  const inp = { age, rhr, measured, beta:el.beta.checked, stroke:el.stroke.checked };
+  const errs = [];
+  if (age == null) return { inp, errs, empty:true };
+  if (!Number.isInteger(age) || age < 18 || age > 100) errs.push("年齡只能輸入 18–100 歲的整數。");
+  if ((rhr != null && !Number.isInteger(rhr)) || (measured != null && !Number.isInteger(measured))) errs.push("心率請輸入整數。");
+  if (measured != null && (measured < 90 || measured > 230)) errs.push("實測最大心率請輸入 90–230 之間的數字。");
+  if (rhr != null && (rhr < 40 || rhr > 120)) errs.push("安靜心率超出合理範圍（40–120），請重新量測。");
+  if (!errs.length && rhr != null && rhr >= calcHRmax(age, inp.beta, measured).v - 20) errs.push("安靜心率太接近最大心率，請重新確認數字。");
+  return { inp, errs, empty:false };
+}
+
+const zoneHTML = (label, r, w) => `<div class="zone"><span class="k">${label}</span><span class="r">${r[0]}–${r[1]}<small>下／分</small></span><span class="w">${w}</span></div>`;
+
+function showResults(on){
+  $("tgEmpty").hidden = on; $("tgBody").hidden = !on;
+  $("s2Empty").hidden = on; $("s2Body").hidden = !on;
+}
+
+function render(){
+  const { inp, errs, empty } = readInput();
+  state.inp = inp; state.res = null; $("verdict").hidden = true;
+  $("err").hidden = !errs.length; $("err").textContent = errs.join(" ");
+  renderWeek(inp);
+  if (empty || errs.length){
+    showResults(false); $("notes").innerHTML = ""; $("hrmax").textContent = "—"; $("hrmaxCalc").textContent = "";
+    document.querySelectorAll("#path li").forEach(li => li.classList.remove("on"));
+    renderJudge(); return;
+  }
+  const res = calcZones(inp); state.res = res; showResults(true);
+  const s = res.set, useHRR = !!res.mod.hrr;
+
+  // field target
+  const pick = z => useHRR ? z.hrr : z.max;
+  let t = `<div class="tz"><span class="k">中等（${useHRR?pct(s.mod.hrr)+" HRR":pct(s.mod.max)+" HRmax"}）</span><span class="r">${pick(res.mod)[0]}–${pick(res.mod)[1]}<small>下／分</small></span><span class="w">自評 ${inp.stroke?"4–5":"5–6"} 分</span></div>`;
+  if (res.vig) t += `<div class="tz vig"><span class="k">高強度（${useHRR?pct(s.vig.hrr)+" HRR":pct(s.vig.max)+" HRmax"}）</span><span class="r">${pick(res.vig)[0]}–${pick(res.vig)[1]}<small>下／分</small></span><span class="w">自評 7–8 分</span></div>`;
+  $("targets").innerHTML = t;
+  $("tgMeta").innerHTML = `最大心率 <b>${res.hm.v}</b>（${res.hm.calc}）｜${useHRR?"心率儲備法":"最大心率百分比（填安靜心率可改用心率儲備法）"}｜${inp.stroke?"中風指引區間":"ACSM 區間"}`;
+
+  // teach step 1
+  document.querySelectorAll("#path li").forEach(li => li.classList.toggle("on", li.dataset.k === res.hm.src));
+  $("hrmax").textContent = res.hm.v; $("hrmaxCalc").textContent = res.hm.calc;
+
+  // teach step 2
+  $("setName").textContent = "使用區間：" + s.name;
+  if (useHRR){
+    let h = `<div class="formula">（${res.hm.v} − ${inp.rhr}）× 強度 ＋ ${inp.rhr}</div>`;
+    h += zoneHTML("中等 "+pct(s.mod.hrr), res.mod.hrr, `${res.hrr} × ${pct(s.mod.hrr)} ＋ ${inp.rhr}`);
+    if (res.vig) h += zoneHTML("高強度 "+pct(s.vig.hrr), res.vig.hrr, `${res.hrr} × ${pct(s.vig.hrr)} ＋ ${inp.rhr}`);
+    $("hrrBody").innerHTML = h;
+  } else $("hrrBody").innerHTML = `<div class="none">填入安靜心率後才能用這個算法，它有納入每個人的安靜心率。</div>`;
+  let m = `<div class="formula">${res.hm.v} × 強度</div>`;
+  m += zoneHTML("中等 "+pct(s.mod.max), res.mod.max, `${res.hm.v} × ${pct(s.mod.max)}`);
+  if (res.vig) m += zoneHTML("高強度 "+pct(s.vig.max), res.vig.max, `${res.hm.v} × ${pct(s.vig.max)}`);
+  $("maxBody").innerHTML = m;
+  if (useHRR){
+    const d1 = Math.abs(res.mod.hrr[0]-res.mod.max[0]), d2 = Math.abs(res.mod.hrr[1]-res.mod.max[1]);
+    const lo = Math.min(d1,d2), hi = Math.max(d1,d2);
+    $("diff").textContent = `同一個人，中等強度兩種算法差了 ${lo===hi?lo:lo+"–"+hi} 下`;
+  } else $("diff").textContent = "";
+  renderChart(res, inp);
+
+  // notes (both modes)
+  const notes = [];
+  if (inp.beta && !inp.measured) notes.push(`<div class="note"><b>有吃 β 阻斷劑</b>心率只是參考，請以下方的強度判斷為主。164 − 0.7 × 年齡是用 40–80 歲、冠心病、服 β 阻斷劑的病人建立的，估計標準誤約 18 下${inp.age<40?"；這位學員未滿 40 歲，屬於外推":""}；沒有冠心病的人套用也屬於外推。</div>`);
+  if (inp.stroke) notes.push(`<div class="note"><b>中風或心血管疾病</b>需有醫師同意再進行有氧訓練。這裡只顯示中等強度。</div>`);
+  if (!inp.beta && !inp.measured) notes.push(`<div class="note plain"><b>預估值</b>220 − 年齡在 40 歲以上可能低估最大心率（70 歲約低估 10 下，Tanaka et al., 2001），實際以學員反應為準。</div>`);
+  $("notes").innerHTML = notes.join("");
+  renderJudge();
+}
+
+function renderChart(res, inp){
+  const vals = [res.hm.v, res.mod.max[0]];
+  if (inp.rhr != null) vals.push(inp.rhr);
+  if (res.mod.hrr) vals.push(res.mod.hrr[0]);
+  const lo = Math.floor((Math.min(...vals)-5)/10)*10, hi = Math.ceil((Math.max(...vals)+5)/10)*10;
+  const P = v => ((v-lo)/(hi-lo)*100).toFixed(2)+"%";
+  const W = (a,b) => ((b-a)/(hi-lo)*100).toFixed(2)+"%";
+  const marks = () => (inp.rhr!=null?`<span class="mark" style="left:${P(inp.rhr)}"></span>`:"") + `<span class="mark" style="left:${P(res.hm.v)}"></span>`;
+  const segs = k => {
+    let h = `<span class="seg ${k} mod" style="left:${P(res.mod[k][0])};width:${W(res.mod[k][0],res.mod[k][1])}"></span>`;
+    if (res.vig && res.vig[k]) h += `<span class="seg ${k} vig" style="left:${P(res.vig[k][0])};width:${W(res.vig[k][0],res.vig[k][1])}"></span>`;
+    return h;
+  };
+  let h = `<div class="chart-row"><span></span><div class="marks-top">${inp.rhr!=null?`<span style="left:${P(inp.rhr)}">安靜 ${inp.rhr}</span>`:""}<span style="left:${P(res.hm.v)}">最大 ${res.hm.v}</span></div></div>`;
+  if (res.mod.hrr) h += `<div class="chart-row"><span class="lbl hrr">心率儲備法</span><div class="track">${marks()}${segs("hrr")}</div></div>`;
+  h += `<div class="chart-row"><span class="lbl">最大心率百分比</span><div class="track">${marks()}${segs("max")}</div></div>`;
+  let ticks = ""; const step = (hi-lo) > 100 ? 20 : 10;
+  for (let v=lo; v<=hi; v+=step) ticks += `<span style="left:${P(v)}">${v}</span>`;
+  h += `<div class="chart-row"><span class="lbl" style="font-weight:500;color:var(--muted)">心率（下／分）</span><div class="axis">${ticks}</div></div>`;
+  $("chart").innerHTML = h;
+  let lg = `<span><i style="background:var(--orange-soft);border:2px solid var(--orange)"></i>中等</span>`;
+  if (res.vig) lg += `<span><i style="background:var(--orange)"></i>高強度</span>`;
+  $("legend").innerHTML = lg + `<span>灰色為最大心率百分比法</span>`;
+}
+
+function renderWeek(inp){
+  const valid = Number.isInteger(inp.age) && inp.age >= 18 && inp.age <= 100;
+  const older = valid && inp.age >= 65, adult = valid && inp.age < 65;
+  let h = `<div class="grp ${adult?"on":""}"><h3>18–64 歲${adult?'<span class="you">這位學員</span>':""}</h3><ul>
+    <li>每週 150–300 分鐘中等強度，或 75–150 分鐘高強度，或兩者組合</li><li>每週 2 天以上肌力訓練</li></ul></div>
+  <div class="grp ${older?"on":""}"><h3>65 歲以上${older?'<span class="you">這位學員</span>':""}</h3><ul>
+    <li>同 18–64 歲的有氧與肌力建議</li><li>再加上每週 3 天以上、以平衡與肌力為主的多元訓練</li></ul></div>
+  <div class="note plain"><b>怎麼分配</b>ACSM 第 12 版表 5.1：每週至少 3 天，對多數成人來說，分散在 3–5 天可能最有助於達到建議量；中等強度每天 30–60 分鐘，高強度每天 20–60 分鐘。<br>換算參考：1 分鐘高強度約等於 2 分鐘中等（由建議量推算，WHO 原文只寫「等效組合」）。</div>`;
+  if (inp.stroke) h += `<div class="note"><b>中風或心血管疾病</b>以上是一般人的建議，運動量請依醫師建議與中風指引調整。</div>`;
+  $("week").innerHTML = h;
+}
+
+// judgement section
+function renderJudge(){
+  const stroke = !!(state.inp && state.inp.stroke);
+  if (stroke) state.goal = "mod";
+  $("gVig").disabled = stroke;
+  $("gMod").setAttribute("aria-pressed", state.goal==="mod"); $("gVig").setAttribute("aria-pressed", state.goal==="vig");
+  $("tAer").setAttribute("aria-pressed", state.type==="aer"); $("tStr").setAttribute("aria-pressed", state.type==="str");
+  const aer = state.type === "aer";
+  $("askQ").innerHTML = aer ? "「1 到 10 分，現在幾分累？」<br>「知道現在在哪裡嗎？」" : "「還能再做幾下？」";
+  $("askN").textContent = aer
+    ? "聽他的回答講得出幾個字，就是說話表現；答不清楚或答非所問，立刻停止。（教練實務）"
+    : "分數 ＝ 10 − 還能再做幾下。也可以直接問「1 到 10 分，幾分累？」";
+  $("speechNote").hidden = !(aer && stroke);
+  $("timing").innerHTML = aer
+    ? `<b>什麼時候判斷</b>同一強度持續 3–5 分鐘、呼吸穩定後再判斷；間歇訓練在每一段做完前判斷。（教練實務）`
+    : `<b>什麼時候判斷</b>每一組做完當下問：「還能再做幾下？」一般人平均會少估約 1 下；長者的研究資料少，搭配看動作有沒有變慢、走樣。`;
+  $("lvls").classList.toggle("warn", aer || stroke);
+  let hint = "";
+  if (state.res && aer){
+    const z = state.goal==="vig" ? state.res.vig : state.res.mod;
+    if (z){ const r = z.hrr || z.max; hint = `目標心率 ${r[0]}–${r[1]} 下／分`; }
+  }
+  if (stroke) hint += (hint?"；":"") + "中風／心血管個案只做中等強度";
+  $("goalHint").textContent = hint; $("goalHint").hidden = !hint;
+  let b = "";
+  const bd = bands(stroke);
+  $("gMod").textContent = stroke ? "中等 4–5" : "中等 5–6";
+  for (const lv of [1,2,3,4]) b += `<button type="button" data-l="${lv}"><span class="sc num">${bd.score[lv]}</span><span class="tx"><b>${LV[lv]}</b><span>${aer?"有氧":"肌力"}：${bd.desc[state.type][lv]}</span></span></button>`;
+  $("lvls").innerHTML = b;
+  document.querySelectorAll("#lvls button").forEach(x => x.onclick = () => judge(Number(x.dataset.l), x));
+}
+$("gMod").onclick = () => { state.goal="mod"; $("verdict").hidden = true; renderJudge(); };
+$("gVig").onclick = () => { state.goal="vig"; $("verdict").hidden = true; renderJudge(); };
+$("tAer").onclick = () => { state.type="aer"; $("verdict").hidden = true; renderJudge(); };
+$("tStr").onclick = () => { state.type="str"; $("verdict").hidden = true; renderJudge(); };
+
+const KEY = "lkk-talktest-log-v3";
+let memLog = [];
+const loadLog = () => store.get(KEY, memLog);
+const saveLog = l => { memLog = l; store.set(KEY, l); };
+const pad = n => String(n).padStart(2,"0");
+const fmtTime = iso => { const d = new Date(iso); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const esc = s => (s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function judge(lv, btn){
+  const stroke = !!(state.inp && state.inp.stroke);
+  const g = stroke ? "stroke" : state.goal;
+  const [t, d, cls] = FEEDBACK[state.type][g][lv];
+  const v = $("verdict"); v.hidden = false; v.className = "verdict " + cls;
+  const sc = bands(stroke).score[lv];
+  $("vT").textContent = `${sc} 分・${LV[lv]}｜${t}`; $("vD").textContent = d;
+  v.style.animation = "none"; void v.offsetWidth; v.style.animation = "";
+  document.querySelectorAll("#lvls button").forEach(x => x.classList.toggle("last", x === btn));
+  const entry = { t:new Date().toISOString(), type: state.type==="aer"?"有氧":"肌力",
+    goal: stroke ? "中等（中風）" : (state.goal==="vig"?"高強度":"中等"),
+    score:sc, level:LV[lv], hr:(v => /^\d{2,3}$/.test(v) && +v >= 40 && +v <= 230 ? v : "")($("hrNow").value.trim()), verdict:t, cls };
+  const l = loadLog(); l.push(entry); saveLog(l); renderLog();
+  $("hrNow").value = "";
+}
+
+function renderLog(){
+  const l = loadLog();
+  if (!l.length){ $("logWrap").innerHTML = `<div class="empty-log">還沒有紀錄。點選上面的分數後，會在這裡依時間列出。</div>`; return; }
+  let h = `<table><thead><tr><th>時間</th><th>類型</th><th>目標</th><th>分數</th><th>心率</th><th>判讀</th></tr></thead><tbody>`;
+  for (const e of l.slice().reverse()) h += `<tr><td class="num">${fmtTime(e.t)}</td><td>${e.type}</td><td>${e.goal}</td><td class="num">${e.score}（${e.level}）</td><td class="num">${esc(e.hr)||"—"}</td><td><span class="pill ${e.cls}">${e.verdict}</span></td></tr>`;
+  $("logWrap").innerHTML = h + "</tbody></table>";
+}
+
+let clearArmed = false;
+$("clearBtn").onclick = () => {
+  const b = $("clearBtn");
+  if (!clearArmed){ clearArmed = true; b.textContent = "再按一次確認清除"; b.className = "btn danger"; setTimeout(()=>{ clearArmed=false; b.textContent="清除"; b.className="btn"; }, 3000); return; }
+  saveLog([]); clearArmed = false; b.textContent = "清除"; b.className = "btn"; $("verdict").hidden = true; renderLog();
+};
+
+// demo via #demo
+function loadDemo(){
+  el.age.value = 70; el.rhr.value = 80; el.measured.value = ""; el.beta.checked = true; el.stroke.checked = true;
+  $("demoNote").hidden = false;
+}
+$("clearDemo").onclick = () => {
+  el.age.value = ""; el.rhr.value = ""; el.measured.value = ""; el.beta.checked = false; el.stroke.checked = false;
+  $("demoNote").hidden = true; el.age.focus(); render();
+};
+Object.values(el).forEach(e => e.addEventListener("input", () => { $("demoNote").hidden = true; render(); }));
+
+if (location.hash === "#demo"){ loadDemo(); setMode("teach"); } else setMode(store.get("lkk-mode", "field"));
+render(); renderLog();
+</script>
+
+</body>
+</html>
