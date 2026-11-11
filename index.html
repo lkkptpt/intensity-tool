@@ -323,20 +323,6 @@ details.stop-box[open] summary{margin-bottom:6px}
       <summary>更多：推估 1RM、肌力與爆發力重量</summary>
       <div class="inner" id="sxMoreIn"></div>
     </details>
-    <details class="xwalk s-only">
-      <summary>調整：下一組目標、重量級距</summary>
-      <div class="inner">
-        <div class="row2">
-          <div class="field"><label for="sxTR">下一組做幾下</label><input id="sxTR" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="同這組"></div>
-          <div class="field"><label for="sxTRir">下一組保留幾下</label><input id="sxTRir" type="number" inputmode="decimal" min="0" max="10" step="0.5"></div>
-        </div>
-        <div class="field"><span class="lab">重量級距（公斤，器材一格多少）</span>
-          <div class="seg-ctl" role="group" aria-label="重量級距" id="sxStep">
-            <button type="button" data-s="0.5">0.5</button><button type="button" data-s="1">1</button><button type="button" data-s="2.5">2.5</button><button type="button" data-s="5">5</button>
-          </div>
-        </div>
-      </div>
-    </details>
 
     <details class="xwalk">
       <summary>什麼時候判斷</summary>
@@ -551,8 +537,9 @@ $("gMod").onclick = () => { state.goal="mod"; $("verdict").hidden = true; resetS
 $("gVig").onclick = () => { state.goal="vig"; $("verdict").hidden = true; resetStr(); renderJudge(); };
 
 // ----- 肌力：還能再做幾下（判讀）＋重量換算，合在一起
-const sx = { w:$("sxW"), r:$("sxR"), tr:$("sxTR"), trir:$("sxTRir") };
-let sxStep = Number(store.get("lkk-step", 0.5)) || 0.5, sxRir = null;
+const sx = { w:$("sxW"), r:$("sxR") };
+const sxStep = 0.5;   // smallest plate step, fixed (公斤)
+let sxRir = null;
 const kg = x => (Math.round(x*10)/10).toFixed(1).replace(/\.0$/, "");
 const defaultTRir = () => (state.inp && state.inp.stroke) ? 5 : (state.goal === "vig" ? 2 : 4);
 // same bands as DESC / DESC_S above
@@ -563,8 +550,6 @@ function renderStr(){
   for (let i = 0; i <= 7; i++) c += `<button type="button" data-r="${i}" aria-pressed="${sxRir===i}">${i===7?"7+":i}</button>`;
   $("sxChips").innerHTML = c;
   document.querySelectorAll("#sxChips button").forEach(b => b.onclick = () => pickRir(Number(b.dataset.r)));
-  document.querySelectorAll("#sxStep button").forEach(b => b.setAttribute("aria-pressed", Number(b.dataset.s) === sxStep));
-  sx.trir.placeholder = `預設 ${defaultTRir()}`;
   const out = $("sxOut"), more = $("sxMore"), err = $("sxErr");
   const hide = msg => { out.hidden = true; more.hidden = true; err.hidden = !msg; err.textContent = msg || ""; };
   if (state.type !== "str") return null;
@@ -578,14 +563,13 @@ function renderStr(){
   const w = num(sx.w), r = num(sx.r);
   if (w == null && r == null){ hide(""); return res; }
   if (w == null || r == null){ hide("要算下一組重量，重量和做了幾下都要填。"); return res; }
-  const tr = num(sx.tr) ?? r, trir = num(sx.trir) ?? defaultTRir(), half = x => Number.isInteger(x*2);
+  const tr = r, trir = defaultTRir();   // next set: same reps, reps in reserve from today's goal
   if (!(w > 0)){ hide("重量請輸入大於 0 的數字。"); return res; }
-  if (!Number.isInteger(r) || r < 1 || !Number.isInteger(tr) || tr < 1){ hide("次數請輸入 1 以上的整數。"); return res; }
-  if (trir < 0 || !half(trir)){ hide("保留次數請輸入 0 以上，最小單位 0.5。"); return res; }
+  if (!Number.isInteger(r) || r < 1){ hide("次數請輸入 1 以上的整數。"); return res; }
   if (r + sxRir > LOAD_MAX){ hide(`做的次數加還能再做的次數超過 ${LOAD_MAX} 下，推估不準，不算重量。請換重一點、做少一點再測。`); return res; }
   if (tr + trir > LOAD_MAX){ hide(`下一組的次數加保留次數超過 ${LOAD_MAX} 下，不算重量。`); return res; }
   const k = calcLoad(w, r, sxRir, tr, trir, sxStep);
-  out.innerHTML = `<span class="k">下一組放</span><span class="r">${kg(k.next)}<small>公斤</small></span><span class="w">做 ${tr} 下、保留 ${kg(trir)} 下｜未進位 ${k.raw.toFixed(1)} 公斤</span>`;
+  out.innerHTML = `<span class="k">下一組放</span><span class="r">${kg(k.next)}<small>公斤</small></span><span class="w">做 ${tr} 下、保留 ${kg(trir)} 下</span>`;
   const notes = [];
   if (k.rtf > LOAD_WARN) notes.push(`做的次數加還能再做的次數超過 ${LOAD_WARN} 下，推估誤差變大。`);
   if (sxRir >= 5) notes.push("還能再做 5 下以上時，學員通常估得比較不準。");
@@ -607,8 +591,6 @@ function pickRir(n){
 function newSet(){ resetStr(); $("verdict").hidden = true; renderStr(); }
 function refreshStr(){ renderStr(); }
 sx.w.addEventListener("input", newSet); sx.r.addEventListener("input", newSet);
-sx.tr.addEventListener("input", refreshStr); sx.trir.addEventListener("input", refreshStr);
-document.querySelectorAll("#sxStep button").forEach(b => b.onclick = () => { sxStep = Number(b.dataset.s); store.set("lkk-step", sxStep); refreshStr(); });
 
 function setTab(t){
   state.tab = t; document.body.dataset.tab = t;
