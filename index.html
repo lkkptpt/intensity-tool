@@ -239,7 +239,7 @@ body.field .teach{display:none}
     </div>
     <div class="checks">
       <label class="check" for="beta"><input id="beta" type="checkbox"><div><b>有吃 β 阻斷劑（beta-blocker）</b><span>常見於高血壓、心臟病用藥，會壓低心率</span></div></label>
-      <label class="check" for="stroke"><input id="stroke" type="checkbox"><div><b>中風或心血管疾病</b><span>改用中風指引的區間，只顯示中等強度；需有醫師同意</span></div></label>
+      <label class="check" for="stroke"><input id="stroke" type="checkbox"><div><b>中風或心血管疾病</b><span>只顯示中等強度，自評分數改用中風指引；需有醫師同意</span></div></label>
     </div>
     <div class="note plain"><b>心率不準的情況</b>心律不整（例如心房顫動）或吃其他會影響心率的心臟用藥時，心率只能參考，請以下方的強度判斷為主。（教練實務）</div>
     <div class="err" id="err" hidden></div>
@@ -529,7 +529,8 @@ function render(){
   // notes (both modes)
   const notes = [];
   if (inp.beta && !inp.measured) notes.push(`<div class="note"><b>有吃 β 阻斷劑</b>心率只是參考，請以下方的強度判斷為主。164 − 0.7 × 年齡是用 40–80 歲、冠心病、服 β 阻斷劑的病人建立的，估計標準誤約 18 下${inp.age<40?"；這位學員未滿 40 歲，屬於外推":""}；沒有冠心病的人套用也屬於外推。</div>`);
-  if (inp.stroke) notes.push(`<div class="note"><b>中風或心血管疾病</b>需有醫師同意再進行有氧訓練。這裡只顯示中等強度。</div>`);
+  if (inp.rhr != null && inp.rhr > 100) notes.push(`<div class="note"><b>安靜心率偏高</b>安靜心率超過 100，請確認已坐著休息 5 分鐘再量；數字沒錯的話，目標心率會跟著偏高，請以下方的強度判斷為主。</div>`);
+  if (inp.stroke) notes.push(`<div class="note"><b>中風或心血管疾病</b>需有醫師同意再進行有氧訓練。這裡只顯示中等強度。<br>自評 4–5 分是中風指引（AEROBICS 2019）的量表，刻度和一般的 0–10 分不同，強度和一般的 5–6 分相同（都對應 Borg 12–13）。</div>`);
   if (!inp.beta && !inp.measured) notes.push(`<div class="note plain"><b>預估值</b>220 − 年齡在 40 歲以上可能低估最大心率（70 歲約低估 10 下，Tanaka et al., 2001），實際以學員反應為準。</div>`);
   $("notes").innerHTML = notes.join("");
   renderJudge();
