@@ -210,8 +210,12 @@ footer a{color:inherit;overflow-wrap:anywhere}
 .sign{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:700;color:var(--ink);font-size:13px}
 .sign span:last-child{color:var(--orange-ink)}
 body.field .teach{display:none}
-body[data-tab="hr"] .t-jd,body:not([data-tab="hr"]) .t-hr{display:none}
-body[data-tab="aer"] .s-only,body[data-tab="str"] .a-only{display:none}
+body[data-tab="aer"] .s-only,body[data-tab="str"] .a-only,body[data-tab="str"] .t-aer{display:none}
+details.setup>summary{font-weight:700;font-size:16px;cursor:pointer}
+details.setup[open]>summary{margin-bottom:12px}
+details.setup .inner{display:grid;gap:14px}
+footer details summary{font-weight:700;cursor:pointer;color:var(--ink)}
+footer details[open] summary{margin-bottom:8px}
 .tab-ctl button{font-size:18px;padding:13px 8px}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -227,23 +231,13 @@ details.stop-box[open] summary{margin-bottom:6px}
   <header>
     <div class="eyebrow">練健康｜教練用工具</div>
     <h1>目標心率與現場強度判斷</h1>
-    <p>上方切換心率、有氧、肌力。教學模式會顯示完整計算過程。</p>
+    <p>選有氧或肌力，照學員的回答點，馬上知道要加、維持還是減。</p>
   </header>
 
-  <div class="seg-ctl tab-ctl" role="group" aria-label="功能">
-    <button type="button" id="tabHr" aria-pressed="true">心率</button>
-    <button type="button" id="tabAer" aria-pressed="false">有氧</button>
-    <button type="button" id="tabStr" aria-pressed="false">肌力</button>
-  </div>
-
-  <div class="seg-ctl mode-ctl" role="group" aria-label="顯示模式">
-    <button type="button" id="mField" aria-pressed="true">現場模式</button>
-    <button type="button" id="mTeach" aria-pressed="false">教學模式</button>
-  </div>
-
   <!-- INPUT -->
-  <section class="card t-hr" aria-labelledby="in-h">
-    <div class="sec-title"><h2 id="in-h">學員資料</h2></div>
+  <details class="card setup" id="setup">
+    <summary id="setupSum">學員設定</summary>
+    <div class="inner">
     <div class="demo" id="demoNote" hidden><span>目前是範例：70 歲中風個案、有吃 β 阻斷劑、安靜心率 80</span><button type="button" id="clearDemo">清空，輸入我的學員</button></div>
     <div class="row2">
       <div class="field">
@@ -265,14 +259,21 @@ details.stop-box[open] summary{margin-bottom:6px}
       <label class="check" for="beta"><input id="beta" type="checkbox"><div><b>有吃 β 阻斷劑（beta-blocker）</b><span>常見於高血壓、心臟病用藥，會壓低心率</span></div></label>
       <label class="check" for="stroke"><input id="stroke" type="checkbox"><div><b>中風或心血管疾病</b><span>只顯示中等強度，自評分數改用中風指引；需有醫師同意</span></div></label>
     </div>
-    <div class="note plain"><b>心率不準的情況</b>心律不整（例如心房顫動）或吃其他會影響心率的心臟用藥時，心率只能參考，請以下方的強度判斷為主。（教練實務）</div>
+    <div class="note plain"><b>心率不準的情況</b>心律不整（例如心房顫動）或吃其他會影響心率的心臟用藥時，心率只能參考，請以學員的回答為主。（教練實務）</div>
     <div class="err" id="err" hidden></div>
-  </section>
+    <button type="button" class="btn solid" id="setupDone">完成</button>
+    </div>
+  </details>
 
-  <!-- TARGET (field + teach summary) -->
-  <section class="card t-hr" aria-labelledby="tg-h">
+  <div class="seg-ctl tab-ctl" role="group" aria-label="功能">
+    <button type="button" id="tabAer" aria-pressed="false">有氧</button>
+    <button type="button" id="tabStr" aria-pressed="false">肌力</button>
+  </div>
+
+  <!-- TARGET -->
+  <section class="card t-aer" aria-labelledby="tg-h">
     <div class="sec-title"><h2 id="tg-h">目標心率</h2></div>
-    <div id="tgEmpty" class="empty">輸入年齡後，這裡會顯示中等與高強度的目標心率。</div>
+    <div id="tgEmpty" class="empty">在上面的「學員設定」填年齡，這裡會顯示目標心率。</div>
     <div id="tgBody" hidden>
       <div class="targets" id="targets"></div>
       <div class="meta" id="tgMeta"></div>
@@ -280,41 +281,8 @@ details.stop-box[open] summary{margin-bottom:6px}
     <div class="notes" id="notes"></div>
   </section>
 
-  <!-- TEACH: STEP 1 -->
-  <section class="card t-hr teach" id="s1" aria-labelledby="s1-h">
-    <div class="sec-title"><span class="step">①</span><h2 id="s1-h">先找最大心率</h2></div>
-    <ol class="path" id="path">
-      <li data-k="measured"><span class="tag">1</span><div><div class="q">有做最大運動測試？</div><div class="f">直接用測到的數值</div></div></li>
-      <li data-k="beta"><span class="tag">2</span><div><div class="q">有吃 β 阻斷劑？</div><div class="f">164 − 0.7 × 年齡</div></div></li>
-      <li data-k="general"><span class="tag">3</span><div><div class="q">以上都沒有</div><div class="f">220 − 年齡</div></div></li>
-    </ol>
-    <div class="big" id="hmBig"><span class="v" id="hrmax">—</span><span class="u">下／分</span><span class="calc" id="hrmaxCalc"></span></div>
-  </section>
-
-  <!-- TEACH: STEP 2 -->
-  <section class="card t-hr teach" id="s2" aria-labelledby="s2-h">
-    <div class="sec-title"><span class="step">②</span><h2 id="s2-h">再算目標心率</h2></div>
-    <div id="s2Empty" class="empty">輸入年齡後顯示兩種算法的比較。</div>
-    <div id="s2Body" style="display:grid;gap:14px" hidden>
-      <p class="sub" id="setName"></p>
-      <div class="methods">
-        <div class="m hrr"><h3>心率儲備法（HRR）</h3><div class="body" id="hrrBody"></div></div>
-        <div class="m max"><h3>最大心率百分比（%HRmax）</h3><div class="body" id="maxBody"></div></div>
-      </div>
-      <div class="diff" id="diff"></div>
-      <div class="chart" id="chart" aria-hidden="true"></div>
-      <div class="legend" id="legend"></div>
-    </div>
-  </section>
-
-  <!-- TEACH: WEEKLY -->
-  <section class="card t-hr teach" aria-labelledby="wk-h">
-    <div class="sec-title"><h2 id="wk-h">每週建議量</h2></div>
-    <div class="week" id="week"></div>
-  </section>
-
   <!-- FIELD JUDGEMENT -->
-  <section class="card t-jd" aria-labelledby="tt-h">
+  <section class="card" aria-labelledby="tt-h">
     <div class="sec-title"><h2 id="tt-h">現場強度判斷</h2></div>
     <div class="field">
       <span class="lab">今日目標</span>
@@ -332,13 +300,9 @@ details.stop-box[open] summary{margin-bottom:6px}
     <div class="note a-only" id="speechNote" hidden><b>中風個案注意</b>有失語或構音困難時，講不出話可能是語言障礙而不是喘，不要用說話判斷，改用心率，或請學員用手指比 1–10 分。</div>
 
     <div class="field a-only">
-      <label for="hrNow">當下心率（選填）</label>
-      <input id="hrNow" type="number" inputmode="numeric" min="40" max="230" placeholder="下／分">
-    </div>
-    <div class="field a-only">
       <span class="lab">現在是幾分？</span>
       <div class="lvls" role="group" aria-label="強度分級" id="lvls"></div>
-      <span class="hint">照學員的回答點，點了就會記錄。</span>
+      <span class="hint">照學員的回答點。</span>
     </div>
 
     <div class="pair s-only">
@@ -348,7 +312,7 @@ details.stop-box[open] summary{margin-bottom:6px}
     <div class="field s-only">
       <span class="lab">問學員：「還能再做幾下？」</span>
       <div class="chips" role="group" aria-label="還能再做幾下" id="sxChips"></div>
-      <span class="hint">有重量先填上面兩格，再點下數；點了就會記錄。</span>
+      <span class="hint">有重量先填上面兩格，再點下數。</span>
     </div>
 
     <div class="verdict" id="verdict" hidden><span class="t" id="vT"></span><span class="d" id="vD"></span></div>
@@ -389,40 +353,13 @@ details.stop-box[open] summary{margin-bottom:6px}
       </ul>
       <span class="hint">異常喘、喘鳴聲、腿抽筋或明顯疲勞：先降低強度，沒改善就停止。</span>
     </details>
-    <div class="log">
-      <div class="log-head">
-        <h3>這支手機的紀錄</h3>
-        <button type="button" class="btn" id="clearBtn">清除</button>
-      </div>
-      <div class="tbl-wrap" id="logWrap"></div>
-      <span class="hint">紀錄只存在這支手機的瀏覽器，換手機或清除瀏覽資料就會不見。</span>
-    </div>
-    <details class="xwalk teach">
-      <summary>這把尺怎麼來的</summary>
-      <div class="inner">
-        <div class="tbl-wrap"><table>
-          <thead><tr><th>分數</th><th>強度</th><th>有氧：說話</th><th>肌力：RIR</th><th>Borg 6–20</th></tr></thead>
-          <tbody>
-            <tr><td class="num">1–4*</td><td>輕度</td><td>可以輕鬆聊天</td><td class="num">6–9*</td><td class="num">9–11</td></tr>
-            <tr><td class="num">5–6</td><td>中等</td><td>說得出完整句子</td><td class="num">4–5</td><td class="num">12–13</td></tr>
-            <tr><td class="num">7–8</td><td>高強度</td><td>只能說幾個字</td><td class="num">2–3</td><td class="num">14–17</td></tr>
-            <tr><td class="num">9–10*</td><td>最大</td><td>講不出話或只講 1–2 個字*</td><td class="num">0–1</td><td class="num">≥18</td></tr>
-          </tbody>
-        </table></div>
-        <p>有氧：說話表現依 CDC；5–6、7–8 分依 WHO 2020 與 CDC 的自覺量表；Borg 欄依 ACSM 第 12 版表 5.2。WHO 和 CDC 的量表是 0–10（CDC 定義 0 是靜坐），RIR 量表是 1–10，這裡統一用 1–10。</p>
-        <p>中風／心血管模式：依 AEROBICS 2019（MacKay-Lyons et al., 2020），中等強度是 0–10 量表 4–5 分（Borg 12–13），所以按鈕改成 1–3／4–5／6–8／9–10，RIR 同樣用相加等於 10。</p>
-        <p>重量換算：用練健康公版課表與訓練營共用的「強度百分比量表」查表。推估 1RM ＝ 重量 ÷ 量表上「次數、保留次數」那一格的百分比；下一組重量 ＝ 推估 1RM × 目標那一格的百分比，再進位到所選的重量級距。次數加保留次數超過 10 下誤差變大（Reynolds et al., 2006），超過 15 下不計算。長者用推估公式多半低估實際 1RM（Knutzen et al., 1999），所以建議重量偏保守。肌力 70–85% 1RM、爆發力 40–60% 1RM 並在向心階段盡量快，依 NSCA 長者立場聲明（Fragala et al., 2019）；「動作變慢就停」是教練實務。</p>
-        <p>肌力：分數 ＋ RIR ＝ 10。7–10 分與 Zourdos et al., 2016 的 RIR 版 RPE 相同；原量表 5–6 分寫「還剩 4–6 下」、1–4 分只寫「輕鬆」，這裡統一用相加等於 10 推算。</p>
-        <p>RIR 準確度：統合分析顯示，一般人平均會少估約 1 下；離力竭越近、每組次數越少（12 下以內）估得越準；訓練經驗的影響不大；研究對象多是健康成人，長者資料很少（Halperin et al., 2022）。推論：1–4 分離力竭最遠，RIR 最不準；長者建議搭配教練觀察動作變慢、動作走樣（教練實務）。</p>
-        <p>* 輕度 1–4 分、最大 9–10 分與「講不出話」是教練現場常用判斷或推論，不是指引的定義。有氧和肌力共用同一把尺是為了現場好溝通，研究上沒有證明兩邊同分數代表相同的生理負荷。</p>
-      </div>
-    </details>
   </section>
 
   <footer>
     <div class="sign"><span>物理治療師 鄭宇劭</span><span>@lkk_ptpt</span></div>
     <div>本工具為訓練參考，所有預估公式都有誤差，實際強度以學員反應為準，不取代醫療評估。</div>
-    <div><b>資料來源</b></div>
+    <details>
+    <summary>資料來源</summary>
     <ol>
       <li>American College of Sports Medicine. (2025). <i>ACSM's guidelines for exercise testing and prescription</i> (12th ed.). Wolters Kluwer.</li>
       <li>Brawner, C. A., et al. (2004). Predicting maximum heart rate among patients with coronary heart disease receiving β-adrenergic blockade therapy. <i>American Heart Journal, 148</i>(5), 910–914. <a href="https://doi.org/10.1016/j.ahj.2004.04.035" target="_blank" rel="noopener">https://doi.org/10.1016/j.ahj.2004.04.035</a></li>
@@ -436,6 +373,7 @@ details.stop-box[open] summary{margin-bottom:6px}
       <li>Tanaka, H., Monahan, K. D., &amp; Seals, D. R. (2001). Age-predicted maximal heart rate revisited. <i>Journal of the American College of Cardiology, 37</i>(1), 153–156. <a href="https://doi.org/10.1016/S0735-1097(00)01054-8" target="_blank" rel="noopener">https://doi.org/10.1016/S0735-1097(00)01054-8</a></li>
       <li>Zourdos, M. C., et al. (2016). Novel resistance training–specific rating of perceived exertion scale measuring repetitions in reserve. <i>Journal of Strength and Conditioning Research, 30</i>(1), 267–275. <a href="https://doi.org/10.1519/JSC.0000000000001049" target="_blank" rel="noopener">https://doi.org/10.1519/JSC.0000000000001049</a></li>
     </ol>
+    </details>
   </footer>
 </div>
 
@@ -514,19 +452,12 @@ window.__calc = { calcZones, calcHRmax, calcLoad, pct1RM };
 // ===== UI =====
 const $ = id => document.getElementById(id);
 const el = { age:$("age"), rhr:$("rhr"), measured:$("measured"), beta:$("beta"), stroke:$("stroke") };
-const state = { res:null, inp:null, goal:"mod", type:"aer", mode:"field" };
+const state = { res:null, inp:null, goal:"mod", type:"aer" };
 const store = {
   get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
 };
 
-function setMode(m){
-  state.mode = m; document.body.classList.toggle("field", m === "field");
-  $("mField").setAttribute("aria-pressed", m === "field"); $("mTeach").setAttribute("aria-pressed", m === "teach");
-  store.set("lkk-mode", m);
-}
-$("mField").onclick = () => setMode("field");
-$("mTeach").onclick = () => setMode("teach");
 
 function readInput(){
   const num = e => e.value.trim() === "" ? null : Number(e.value);
@@ -542,21 +473,18 @@ function readInput(){
   return { inp, errs, empty:false };
 }
 
-const zoneHTML = (label, r, w) => `<div class="zone"><span class="k">${label}</span><span class="r">${r[0]}–${r[1]}<small>下／分</small></span><span class="w">${w}</span></div>`;
 
 function showResults(on){
   $("tgEmpty").hidden = on; $("tgBody").hidden = !on;
-  $("s2Empty").hidden = on; $("s2Body").hidden = !on;
 }
 
 function render(){
   const { inp, errs, empty } = readInput();
   state.inp = inp; state.res = null; $("verdict").hidden = true;
   $("err").hidden = !errs.length; $("err").textContent = errs.join(" ");
-  renderWeek(inp);
+  renderSetup(inp);
   if (empty || errs.length){
-    showResults(false); $("notes").innerHTML = ""; $("hrmax").textContent = "—"; $("hrmaxCalc").textContent = "";
-    document.querySelectorAll("#path li").forEach(li => li.classList.remove("on"));
+    showResults(false); $("notes").innerHTML = "";
     renderJudge(); return;
   }
   const res = calcZones(inp); state.res = res; showResults(true);
@@ -569,75 +497,26 @@ function render(){
   $("targets").innerHTML = t;
   $("tgMeta").innerHTML = `最大心率 <b>${res.hm.v}</b>（${res.hm.calc}）｜${useHRR?"心率儲備法":"最大心率百分比（填安靜心率可改用心率儲備法）"}｜${inp.stroke?"中風指引區間":"ACSM 區間"}`;
 
-  // teach step 1
-  document.querySelectorAll("#path li").forEach(li => li.classList.toggle("on", li.dataset.k === res.hm.src));
-  $("hrmax").textContent = res.hm.v; $("hrmaxCalc").textContent = res.hm.calc;
-
-  // teach step 2
-  $("setName").textContent = "使用區間：" + s.name;
-  if (useHRR){
-    let h = `<div class="formula">（${res.hm.v} − ${inp.rhr}）× 強度 ＋ ${inp.rhr}</div>`;
-    h += zoneHTML("中等 "+pct(s.mod.hrr), res.mod.hrr, `${res.hrr} × ${pct(s.mod.hrr)} ＋ ${inp.rhr}`);
-    if (res.vig) h += zoneHTML("高強度 "+pct(s.vig.hrr), res.vig.hrr, `${res.hrr} × ${pct(s.vig.hrr)} ＋ ${inp.rhr}`);
-    $("hrrBody").innerHTML = h;
-  } else $("hrrBody").innerHTML = `<div class="none">填入安靜心率後才能用這個算法，它有納入每個人的安靜心率。</div>`;
-  let m = `<div class="formula">${res.hm.v} × 強度</div>`;
-  m += zoneHTML("中等 "+pct(s.mod.max), res.mod.max, `${res.hm.v} × ${pct(s.mod.max)}`);
-  if (res.vig) m += zoneHTML("高強度 "+pct(s.vig.max), res.vig.max, `${res.hm.v} × ${pct(s.vig.max)}`);
-  $("maxBody").innerHTML = m;
-  if (useHRR){
-    const d1 = Math.abs(res.mod.hrr[0]-res.mod.max[0]), d2 = Math.abs(res.mod.hrr[1]-res.mod.max[1]);
-    const lo = Math.min(d1,d2), hi = Math.max(d1,d2);
-    $("diff").textContent = `同一個人，中等強度兩種算法差了 ${lo===hi?lo:lo+"–"+hi} 下`;
-  } else $("diff").textContent = "";
-  renderChart(res, inp);
-
   // notes (both modes)
   const notes = [];
-  if (inp.beta && !inp.measured) notes.push(`<div class="note"><b>有吃 β 阻斷劑</b>心率只是參考，請以下方的強度判斷為主。164 − 0.7 × 年齡是用 40–80 歲、冠心病、服 β 阻斷劑的病人建立的，估計標準誤約 18 下${inp.age<40?"；這位學員未滿 40 歲，屬於外推":""}；沒有冠心病的人套用也屬於外推。</div>`);
-  if (inp.rhr != null && inp.rhr > 100) notes.push(`<div class="note"><b>安靜心率偏高</b>安靜心率超過 100，請確認已坐著休息 5 分鐘再量；數字沒錯的話，目標心率會跟著偏高，請以下方的強度判斷為主。</div>`);
+  if (inp.beta && !inp.measured) notes.push(`<div class="note"><b>有吃 β 阻斷劑</b>心率只是參考，請以學員的回答為主。164 − 0.7 × 年齡是用 40–80 歲、冠心病、服 β 阻斷劑的病人建立的，估計標準誤約 18 下${inp.age<40?"；這位學員未滿 40 歲，屬於外推":""}；沒有冠心病的人套用也屬於外推。</div>`);
+  if (inp.rhr != null && inp.rhr > 100) notes.push(`<div class="note"><b>安靜心率偏高</b>安靜心率超過 100，請確認已坐著休息 5 分鐘再量；數字沒錯的話，目標心率會跟著偏高，請以學員的回答為主。</div>`);
   if (inp.stroke) notes.push(`<div class="note"><b>中風或心血管疾病</b>需有醫師同意再進行有氧訓練。這裡只顯示中等強度。<br>自評 4–5 分是中風指引（AEROBICS 2019）的量表，刻度和一般的 0–10 分不同，強度和一般的 5–6 分相同（都對應 Borg 12–13）。</div>`);
   if (!inp.beta && !inp.measured) notes.push(`<div class="note plain"><b>預估值</b>220 − 年齡在 40 歲以上可能低估最大心率（70 歲約低估 10 下，Tanaka et al., 2001），實際以學員反應為準。</div>`);
   $("notes").innerHTML = notes.join("");
   renderJudge();
 }
 
-function renderChart(res, inp){
-  const vals = [res.hm.v, res.mod.max[0]];
-  if (inp.rhr != null) vals.push(inp.rhr);
-  if (res.mod.hrr) vals.push(res.mod.hrr[0]);
-  const lo = Math.floor((Math.min(...vals)-5)/10)*10, hi = Math.ceil((Math.max(...vals)+5)/10)*10;
-  const P = v => ((v-lo)/(hi-lo)*100).toFixed(2)+"%";
-  const W = (a,b) => ((b-a)/(hi-lo)*100).toFixed(2)+"%";
-  const marks = () => (inp.rhr!=null?`<span class="mark" style="left:${P(inp.rhr)}"></span>`:"") + `<span class="mark" style="left:${P(res.hm.v)}"></span>`;
-  const segs = k => {
-    let h = `<span class="seg ${k} mod" style="left:${P(res.mod[k][0])};width:${W(res.mod[k][0],res.mod[k][1])}"></span>`;
-    if (res.vig && res.vig[k]) h += `<span class="seg ${k} vig" style="left:${P(res.vig[k][0])};width:${W(res.vig[k][0],res.vig[k][1])}"></span>`;
-    return h;
-  };
-  let h = `<div class="chart-row"><span></span><div class="marks-top">${inp.rhr!=null?`<span style="left:${P(inp.rhr)}">安靜 ${inp.rhr}</span>`:""}<span style="left:${P(res.hm.v)}">最大 ${res.hm.v}</span></div></div>`;
-  if (res.mod.hrr) h += `<div class="chart-row"><span class="lbl hrr">心率儲備法</span><div class="track">${marks()}${segs("hrr")}</div></div>`;
-  h += `<div class="chart-row"><span class="lbl">最大心率百分比</span><div class="track">${marks()}${segs("max")}</div></div>`;
-  let ticks = ""; const step = (hi-lo) > 100 ? 20 : 10;
-  for (let v=lo; v<=hi; v+=step) ticks += `<span style="left:${P(v)}">${v}</span>`;
-  h += `<div class="chart-row"><span class="lbl" style="font-weight:500;color:var(--muted)">心率（下／分）</span><div class="axis">${ticks}</div></div>`;
-  $("chart").innerHTML = h;
-  let lg = `<span><i style="background:var(--orange-soft);border:2px solid var(--orange)"></i>中等</span>`;
-  if (res.vig) lg += `<span><i style="background:var(--orange)"></i>高強度</span>`;
-  $("legend").innerHTML = lg + `<span>灰色為最大心率百分比法</span>`;
+function renderSetup(inp){
+  const parts = [];
+  if (inp.age != null) parts.push(`${inp.age} 歲`);
+  if (inp.rhr != null) parts.push(`安靜 ${inp.rhr}`);
+  if (inp.measured != null) parts.push(`實測最大 ${inp.measured}`);
+  if (inp.beta) parts.push("β 阻斷劑");
+  if (inp.stroke) parts.push("中風／心血管");
+  $("setupSum").textContent = parts.length ? "學員：" + parts.join("｜") + "（點這裡修改）" : "學員設定（做有氧要先填年齡，點這裡）";
 }
-
-function renderWeek(inp){
-  const valid = Number.isInteger(inp.age) && inp.age >= 18 && inp.age <= 100;
-  const older = valid && inp.age >= 65, adult = valid && inp.age < 65;
-  let h = `<div class="grp ${adult?"on":""}"><h3>18–64 歲${adult?'<span class="you">這位學員</span>':""}</h3><ul>
-    <li>每週 150–300 分鐘中等強度，或 75–150 分鐘高強度，或兩者組合</li><li>每週 2 天以上肌力訓練</li></ul></div>
-  <div class="grp ${older?"on":""}"><h3>65 歲以上${older?'<span class="you">這位學員</span>':""}</h3><ul>
-    <li>同 18–64 歲的有氧與肌力建議</li><li>再加上每週 3 天以上、以平衡與肌力為主的多元訓練</li></ul></div>
-  <div class="note plain"><b>怎麼分配</b>ACSM 第 12 版表 5.1：每週至少 3 天，對多數成人來說，分散在 3–5 天可能最有助於達到建議量；中等強度每天 30–60 分鐘，高強度每天 20–60 分鐘。<br>換算參考：1 分鐘高強度約等於 2 分鐘中等（由建議量推算，WHO 原文只寫「等效組合」）。</div>`;
-  if (inp.stroke) h += `<div class="note"><b>中風或心血管疾病</b>以上是一般人的建議，運動量請依醫師建議與中風指引調整。</div>`;
-  $("week").innerHTML = h;
-}
+$("setupDone").onclick = () => { $("setup").open = false; };
 
 // judgement section
 function renderJudge(){
@@ -673,12 +552,12 @@ $("gVig").onclick = () => { state.goal="vig"; $("verdict").hidden = true; resetS
 
 // ----- 肌力：還能再做幾下（判讀）＋重量換算，合在一起
 const sx = { w:$("sxW"), r:$("sxR"), tr:$("sxTR"), trir:$("sxTRir") };
-let sxStep = Number(store.get("lkk-step", 0.5)) || 0.5, sxRir = null, sxEntryT = null;
+let sxStep = Number(store.get("lkk-step", 0.5)) || 0.5, sxRir = null;
 const kg = x => (Math.round(x*10)/10).toFixed(1).replace(/\.0$/, "");
 const defaultTRir = () => (state.inp && state.inp.stroke) ? 5 : (state.goal === "vig" ? 2 : 4);
 // same bands as DESC / DESC_S above
 const rirLevel = (rir, stroke) => stroke ? (rir<=1?4 : rir<=4?3 : rir<=6?2 : 1) : (rir<=1?4 : rir<=3?3 : rir<=5?2 : 1);
-function resetStr(){ sxRir = null; sxEntryT = null; }
+function resetStr(){ sxRir = null; }
 function renderStr(){
   let c = "";
   for (let i = 0; i <= 7; i++) c += `<button type="button" data-r="${i}" aria-pressed="${sxRir===i}">${i===7?"7+":i}</button>`;
@@ -716,45 +595,29 @@ function renderStr(){
     <div class="tz vig"><span class="k">練爆發力（40–60% 1RM）</span><span class="r">${kg(k.pow[0])}–${kg(k.pow[1])}<small>公斤</small></span><span class="w">做快，動作變慢就停</span></div>
   </div><p>推估值。${notes.join("")}實際以學員反應與動作品質為準；長者請搭配看動作有沒有變慢、走樣。</p>`;
   out.hidden = false; more.hidden = false; err.hidden = true;
+  // reserved for a later velocity-based version: add a measured velocity (m/s) next to this set
   res.load = { w, reps:r, rir:sxRir, e1rm:Math.round(k.e1rm*10)/10, pct:k.pct, next:k.next, tReps:tr, tRir:trir, step:sxStep, velocity:null };
   return res;
-}
-function strEntry(res, t){
-  return { t, type:"肌力", goal: res.stroke ? "中等（中風）" : (state.goal==="vig"?"高強度":"中等"),
-    score:bands(res.stroke).score[res.lv], level:LV[res.lv], hr:"", verdict:res.t, cls:res.cls, load:res.load };
 }
 function pickRir(n){
   sxRir = n; const res = renderStr(); if (!res) return;
   ($("sxOut").hidden ? $("verdict") : $("sxOut")).scrollIntoView({ block:"nearest", behavior:"smooth" });
-  sxEntryT = new Date().toISOString();
-  const l = loadLog(); l.push(strEntry(res, sxEntryT)); saveLog(l); renderLog();
 }
 // Changing the set (weight / reps) starts a new set: clear the answer so the coach taps it again.
 function newSet(){ resetStr(); $("verdict").hidden = true; renderStr(); }
-function refreshStr(){
-  const res = renderStr(); if (!res || !sxEntryT) return;
-  const l = loadLog(), i = l.findIndex(e => e.t === sxEntryT);
-  if (i >= 0){ l[i] = strEntry(res, sxEntryT); saveLog(l); renderLog(); }
-}
+function refreshStr(){ renderStr(); }
 sx.w.addEventListener("input", newSet); sx.r.addEventListener("input", newSet);
 sx.tr.addEventListener("input", refreshStr); sx.trir.addEventListener("input", refreshStr);
 document.querySelectorAll("#sxStep button").forEach(b => b.onclick = () => { sxStep = Number(b.dataset.s); store.set("lkk-step", sxStep); refreshStr(); });
 
 function setTab(t){
   state.tab = t; document.body.dataset.tab = t;
-  for (const k of ["Hr","Aer","Str"]) $("tab"+k).setAttribute("aria-pressed", t === k.toLowerCase());
-  if (t !== "hr") state.type = t;
+  for (const k of ["Aer","Str"]) $("tab"+k).setAttribute("aria-pressed", t === k.toLowerCase());
+  state.type = t;
   $("verdict").hidden = true; resetStr(); store.set("lkk-tab", t); renderJudge();
 }
-$("tabHr").onclick = () => setTab("hr"); $("tabAer").onclick = () => setTab("aer"); $("tabStr").onclick = () => setTab("str");
+$("tabAer").onclick = () => setTab("aer"); $("tabStr").onclick = () => setTab("str");
 
-const KEY = "lkk-talktest-log-v3";
-let memLog = [];
-const loadLog = () => store.get(KEY, memLog);
-const saveLog = l => { memLog = l; store.set(KEY, l); };
-const pad = n => String(n).padStart(2,"0");
-const fmtTime = iso => { const d = new Date(iso); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
-const esc = s => (s||"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 function judge(lv, btn){
   const stroke = !!(state.inp && state.inp.stroke);
@@ -765,27 +628,8 @@ function judge(lv, btn){
   $("vT").textContent = `${sc} 分・${LV[lv]}｜${t}`; $("vD").textContent = d;
   v.style.animation = "none"; void v.offsetWidth; v.style.animation = "";
   document.querySelectorAll("#lvls button").forEach(x => x.classList.toggle("last", x === btn));
-  const entry = { t:new Date().toISOString(), type: state.type==="aer"?"有氧":"肌力",
-    goal: stroke ? "中等（中風）" : (state.goal==="vig"?"高強度":"中等"),
-    score:sc, level:LV[lv], hr:(v => /^\d{2,3}$/.test(v) && +v >= 40 && +v <= 230 ? v : "")($("hrNow").value.trim()), verdict:t, cls };
-  const l = loadLog(); l.push(entry); saveLog(l); renderLog();
-  $("hrNow").value = "";
-}
 
-function renderLog(){
-  const l = loadLog();
-  if (!l.length){ $("logWrap").innerHTML = `<div class="empty-log">還沒有紀錄。點選上面的分數後，會在這裡依時間列出。</div>`; return; }
-  let h = `<table><thead><tr><th>時間</th><th>類型</th><th>目標</th><th>分數</th><th>心率</th><th>重量</th><th>判讀</th></tr></thead><tbody>`;
-  for (const e of l.slice().reverse()) h += `<tr><td class="num">${fmtTime(e.t)}</td><td>${e.type}</td><td>${e.goal}</td><td class="num">${e.score}（${e.level}）</td><td class="num">${esc(e.hr)||"—"}</td><td class="num">${e.load ? `${e.load.w}kg×${e.load.reps}｜1RM ${e.load.e1rm}` : "—"}</td><td><span class="pill ${e.cls}">${e.verdict}</span></td></tr>`;
-  $("logWrap").innerHTML = h + "</tbody></table>";
 }
-
-let clearArmed = false;
-$("clearBtn").onclick = () => {
-  const b = $("clearBtn");
-  if (!clearArmed){ clearArmed = true; b.textContent = "再按一次確認清除"; b.className = "btn danger"; setTimeout(()=>{ clearArmed=false; b.textContent="清除"; b.className="btn"; }, 3000); return; }
-  saveLog([]); clearArmed = false; b.textContent = "清除"; b.className = "btn"; $("verdict").hidden = true; renderLog();
-};
 
 // demo via #demo
 function loadDemo(){
@@ -798,9 +642,10 @@ $("clearDemo").onclick = () => {
 };
 Object.values(el).forEach(e => e.addEventListener("input", () => { $("demoNote").hidden = true; render(); }));
 
-if (location.hash === "#demo"){ loadDemo(); setMode("teach"); } else setMode(store.get("lkk-mode", "field"));
-render(); renderLog();
-setTab(location.hash === "#demo" ? "hr" : (t => ["hr","aer","str"].includes(t) ? t : "hr")(store.get("lkk-tab", "hr")));
+if (location.hash === "#demo") loadDemo();
+render();
+setTab(location.hash === "#demo" ? "aer" : (store.get("lkk-tab", "aer") === "str" ? "str" : "aer"));
+$("setup").open = state.type === "aer" && el.age.value.trim() === "";
 </script>
 
 </body>
