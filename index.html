@@ -178,6 +178,14 @@ input:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid
 .log-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .log-head h3{font-size:17px}
 .btn{font:inherit;font-weight:700;font-size:15px;padding:9px 14px;border-radius:8px;border:1.5px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.load-box{border:1.5px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px}
+.load-box h3{margin:0;font-size:17px}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.row3 label,.row3 .lab{font-size:13px}
+.row3 input{font-size:17px;padding:9px 8px}
+.load-out{display:grid;gap:10px}
+.load-out .targets{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.btn.solid{background:var(--navy);border-color:var(--navy);color:var(--on-navy)}
 .btn.danger{background:var(--high);border-color:var(--high);color:#fff}
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:14px}
@@ -328,6 +336,27 @@ body.field .teach{display:none}
       <span class="hint">照學員的回答點，點了就會記錄。分數 ＋ 還能再做幾下 ＝ 10。</span>
     </div>
     <div class="verdict" id="verdict" hidden><span class="t" id="vT"></span><span class="d" id="vD"></span></div>
+    <div class="load-box" id="loadBox" hidden>
+      <h3>重量換算</h3>
+      <span class="hint">填這一組的結果，算出推估 1RM 和下一組該放多重。</span>
+      <div class="row3">
+        <div class="field"><label for="ldW">重量（公斤）</label><input id="ldW" type="number" inputmode="decimal" min="0.5" step="0.5"></div>
+        <div class="field"><label for="ldR">做了幾下</label><input id="ldR" type="number" inputmode="numeric" min="1" max="15" step="1"></div>
+        <div class="field"><label for="ldRir">還能再做幾下</label><input id="ldRir" type="number" inputmode="decimal" min="0" max="10" step="0.5"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="ldTR">下一組做幾下</label><input id="ldTR" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="同這組"></div>
+        <div class="field"><label for="ldTRir">下一組保留幾下</label><input id="ldTRir" type="number" inputmode="decimal" min="0" max="10" step="0.5"></div>
+      </div>
+      <div class="field"><span class="lab">重量級距（公斤，器材一格多少）</span>
+        <div class="seg-ctl" role="group" aria-label="重量級距" id="ldStep">
+          <button type="button" data-s="0.5" aria-pressed="true">0.5</button><button type="button" data-s="1" aria-pressed="false">1</button><button type="button" data-s="2.5" aria-pressed="false">2.5</button><button type="button" data-s="5" aria-pressed="false">5</button>
+        </div>
+      </div>
+      <div class="err" id="ldErr" hidden></div>
+      <div class="load-out" id="ldOut" hidden></div>
+      <button type="button" class="btn solid" id="ldSave" hidden>記錄這一組</button>
+    </div>
     <div class="stop-box">
       <b>出現以下狀況，立刻停止運動</b>
       <ul>
@@ -361,6 +390,7 @@ body.field .teach{display:none}
         </table></div>
         <p>有氧：說話表現依 CDC；5–6、7–8 分依 WHO 2020 與 CDC 的自覺量表；Borg 欄依 ACSM 第 12 版表 5.2。WHO 和 CDC 的量表是 0–10（CDC 定義 0 是靜坐），RIR 量表是 1–10，這裡統一用 1–10。</p>
         <p>中風／心血管模式：依 AEROBICS 2019（MacKay-Lyons et al., 2020），中等強度是 0–10 量表 4–5 分（Borg 12–13），所以按鈕改成 1–3／4–5／6–8／9–10，RIR 同樣用相加等於 10。</p>
+        <p>重量換算：用練健康公版課表與訓練營共用的「強度百分比量表」查表。推估 1RM ＝ 重量 ÷ 量表上「次數、保留次數」那一格的百分比；下一組重量 ＝ 推估 1RM × 目標那一格的百分比，再進位到所選的重量級距。次數加保留次數超過 10 下誤差變大（Reynolds et al., 2006），超過 15 下不計算。長者用推估公式多半低估實際 1RM（Knutzen et al., 1999），所以建議重量偏保守。肌力 70–85% 1RM、爆發力 40–60% 1RM 並在向心階段盡量快，依 NSCA 長者立場聲明（Fragala et al., 2019）；「動作變慢就停」是教練實務。</p>
         <p>肌力：分數 ＋ RIR ＝ 10。7–10 分與 Zourdos et al., 2016 的 RIR 版 RPE 相同；原量表 5–6 分寫「還剩 4–6 下」、1–4 分只寫「輕鬆」，這裡統一用相加等於 10 推算。</p>
         <p>RIR 準確度：統合分析顯示，一般人平均會少估約 1 下；離力竭越近、每組次數越少（12 下以內）估得越準；訓練經驗的影響不大；研究對象多是健康成人，長者資料很少（Halperin et al., 2022）。推論：1–4 分離力竭最遠，RIR 最不準；長者建議搭配教練觀察動作變慢、動作走樣（教練實務）。</p>
         <p>* 輕度 1–4 分、最大 9–10 分與「講不出話」是教練現場常用判斷或推論，不是指引的定義。有氧和肌力共用同一把尺是為了現場好溝通，研究上沒有證明兩邊同分數代表相同的生理負荷。</p>
@@ -443,7 +473,22 @@ const FEEDBACK = {
     stroke: { 1:["偏輕","可以加一點","low"], 2:["剛好","維持","ok"], 3:["過頭","下一組減重量或次數","high"], 4:["停","停下休息，觀察學員狀況","stop"] }
   }
 };
-window.__calc = { calcZones, calcHRmax };
+// ===== Locked rules: 強度百分比量表（公版課表 v28／訓練營 RPE-RIR 聯合圖表）— do not change =====
+// %1RM depends only on (reps + RIR). 1..15 from the table; each extra rep −2.7; half steps = mean of neighbours.
+const PCT_TABLE = [100,95.5,92.2,89.2,86.3,83.7,81.1,78.6,76.2,73.9,70.7,68.0,65.3,62.6,59.9];
+function pct1RM(n){
+  const at = k => k <= 15 ? PCT_TABLE[k-1] : 59.9 - 2.7*(k-15);
+  return Number.isInteger(n) ? at(n) : (at(Math.floor(n)) + at(Math.ceil(n))) / 2;
+}
+const LOAD_WARN = 10, LOAD_MAX = 15;
+const roundStep = (x, step) => Math.round(x/step + 1e-9) * step;
+function calcLoad(w, reps, rir, tReps, tRir, step){
+  const rtf = reps + rir, p = pct1RM(rtf), e1rm = w / (p/100);
+  const tRtf = tReps + tRir, raw = e1rm * pct1RM(tRtf) / 100;
+  const band = (lo, hi) => [roundStep(e1rm*lo, step), roundStep(e1rm*hi, step)];
+  return { rtf, pct:p, e1rm, tRtf, raw, next:roundStep(raw, step), str:band(0.70,0.85), pow:band(0.40,0.60) };
+}
+window.__calc = { calcZones, calcHRmax, calcLoad, pct1RM };
 
 // ===== UI =====
 const $ = id => document.getElementById(id);
@@ -603,11 +648,65 @@ function renderJudge(){
   for (const lv of [1,2,3,4]) b += `<button type="button" data-l="${lv}"><span class="sc num">${bd.score[lv]}</span><span class="tx"><b>${LV[lv]}</b><span>${aer?"有氧":"肌力"}：${bd.desc[state.type][lv]}</span></span></button>`;
   $("lvls").innerHTML = b;
   document.querySelectorAll("#lvls button").forEach(x => x.onclick = () => judge(Number(x.dataset.l), x));
+  if (typeof renderLoad === "function") renderLoad();
 }
 $("gMod").onclick = () => { state.goal="mod"; $("verdict").hidden = true; renderJudge(); };
 $("gVig").onclick = () => { state.goal="vig"; $("verdict").hidden = true; renderJudge(); };
 $("tAer").onclick = () => { state.type="aer"; $("verdict").hidden = true; renderJudge(); };
 $("tStr").onclick = () => { state.type="str"; $("verdict").hidden = true; renderJudge(); };
+
+// ----- 重量換算（肌力）
+const ld = { w:$("ldW"), r:$("ldR"), rir:$("ldRir"), tr:$("ldTR"), trir:$("ldTRir") };
+let ldStep = 0.5, ldLast = null;
+const kg = x => (Math.round(x*10)/10).toFixed(1).replace(/\.0$/, "");
+const defaultTRir = () => (state.inp && state.inp.stroke) ? 5 : (state.goal === "vig" ? 2 : 4);
+function renderLoad(){
+  $("loadBox").hidden = state.type !== "str";
+  ld.trir.placeholder = `預設 ${defaultTRir()}`;
+  const num = e => e.value.trim() === "" ? null : Number(e.value);
+  const w = num(ld.w), r = num(ld.r), rir = num(ld.rir);
+  const out = $("ldOut"), err = $("ldErr"); ldLast = null;
+  const fail = msg => { out.hidden = true; $("ldSave").hidden = true; err.hidden = !msg; err.textContent = msg || ""; };
+  if (w == null || r == null || rir == null) return fail("");
+  const tr = num(ld.tr) ?? r, trir = num(ld.trir) ?? defaultTRir();
+  const half = x => Number.isInteger(x*2);
+  if (!(w > 0)) return fail("重量請輸入大於 0 的數字。");
+  if (!Number.isInteger(r) || r < 1 || !Number.isInteger(tr) || tr < 1) return fail("次數請輸入 1 以上的整數。");
+  if (rir < 0 || trir < 0 || !half(rir) || !half(trir)) return fail("保留次數請輸入 0 以上，最小單位 0.5。");
+  if (r + rir > LOAD_MAX) return fail(`次數加保留次數超過 ${LOAD_MAX} 下，推估不準，不計算。請換重一點、做少一點再測。`);
+  if (tr + trir > LOAD_MAX) return fail(`下一組的次數加保留次數超過 ${LOAD_MAX} 下，不計算。`);
+  const c = calcLoad(w, r, rir, tr, trir, ldStep);
+  let h = `<div class="targets">
+    <div class="tz"><span class="k">下一組放（做 ${tr} 下、保留 ${kg(trir)} 下）</span><span class="r">${kg(c.next)}<small>公斤</small></span><span class="w">未進位 ${c.raw.toFixed(1)} 公斤</span></div>
+    <div class="tz vig"><span class="k">推估 1RM</span><span class="r">${c.e1rm.toFixed(1)}<small>公斤</small></span><span class="w">這組約 ${kg(c.pct)}% 1RM</span></div>
+  </div>
+  <div class="targets">
+    <div class="tz vig"><span class="k">練肌力（70–85% 1RM）</span><span class="r">${kg(c.str[0])}–${kg(c.str[1])}<small>公斤</small></span></div>
+    <div class="tz vig"><span class="k">練爆發力（40–60% 1RM）</span><span class="r">${kg(c.pow[0])}–${kg(c.pow[1])}<small>公斤</small></span><span class="w">做快，動作變慢就停</span></div>
+  </div>`;
+  const notes = [];
+  if (c.rtf > LOAD_WARN) notes.push(`次數加保留次數超過 ${LOAD_WARN} 下，推估誤差變大。`);
+  if (rir >= 5) notes.push("保留 5 下以上時，學員通常估得比較不準。");
+  h += `<div class="note plain"><b>推估值</b>${notes.join("")}實際以學員反應與動作品質為準；長者請搭配看動作有沒有變慢、走樣。</div>`;
+  out.innerHTML = h; out.hidden = false; err.hidden = true; $("ldSave").hidden = false;
+  ldLast = { w, r, rir, tr, trir, c };
+}
+Object.values(ld).forEach(e => e.addEventListener("input", renderLoad));
+document.querySelectorAll("#ldStep button").forEach(b => b.onclick = () => {
+  ldStep = Number(b.dataset.s);
+  document.querySelectorAll("#ldStep button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderLoad();
+});
+$("ldSave").onclick = () => {
+  if (!ldLast) return;
+  const { w, r, rir, tr, trir, c } = ldLast, stroke = !!(state.inp && state.inp.stroke);
+  const l = loadLog();
+  l.push({ t:new Date().toISOString(), type:"肌力", goal: stroke ? "中等（中風）" : (state.goal==="vig"?"高強度":"中等"),
+    score:kg(10 - rir), level:`保留 ${kg(rir)} 下`, hr:"", verdict:`下一組 ${kg(c.next)} 公斤`, cls:"ok",
+    load:{ w, reps:r, rir, e1rm:Math.round(c.e1rm*10)/10, pct:c.pct, next:c.next, tReps:tr, tRir:trir, step:ldStep, velocity:null } });
+  saveLog(l); renderLog();
+  $("ldSave").textContent = "已記錄"; setTimeout(() => { $("ldSave").textContent = "記錄這一組"; }, 1500);
+};
 
 const KEY = "lkk-talktest-log-v3";
 let memLog = [];
@@ -636,8 +735,8 @@ function judge(lv, btn){
 function renderLog(){
   const l = loadLog();
   if (!l.length){ $("logWrap").innerHTML = `<div class="empty-log">還沒有紀錄。點選上面的分數後，會在這裡依時間列出。</div>`; return; }
-  let h = `<table><thead><tr><th>時間</th><th>類型</th><th>目標</th><th>分數</th><th>心率</th><th>判讀</th></tr></thead><tbody>`;
-  for (const e of l.slice().reverse()) h += `<tr><td class="num">${fmtTime(e.t)}</td><td>${e.type}</td><td>${e.goal}</td><td class="num">${e.score}（${e.level}）</td><td class="num">${esc(e.hr)||"—"}</td><td><span class="pill ${e.cls}">${e.verdict}</span></td></tr>`;
+  let h = `<table><thead><tr><th>時間</th><th>類型</th><th>目標</th><th>分數</th><th>心率</th><th>重量</th><th>判讀</th></tr></thead><tbody>`;
+  for (const e of l.slice().reverse()) h += `<tr><td class="num">${fmtTime(e.t)}</td><td>${e.type}</td><td>${e.goal}</td><td class="num">${e.score}（${e.level}）</td><td class="num">${esc(e.hr)||"—"}</td><td class="num">${e.load ? `${e.load.w}kg×${e.load.reps}｜1RM ${e.load.e1rm}` : "—"}</td><td><span class="pill ${e.cls}">${e.verdict}</span></td></tr>`;
   $("logWrap").innerHTML = h + "</tbody></table>";
 }
 
