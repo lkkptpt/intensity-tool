@@ -210,6 +210,16 @@ footer a{color:inherit;overflow-wrap:anywhere}
 .sign{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:700;color:var(--ink);font-size:13px}
 .sign span:last-child{color:var(--orange-ink)}
 body.field .teach{display:none}
+body[data-tab="hr"] .t-jd,body:not([data-tab="hr"]) .t-hr{display:none}
+body[data-tab="aer"] .s-only,body[data-tab="str"] .a-only{display:none}
+.tab-ctl button{font-size:18px;padding:13px 8px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.chips button{font:inherit;font-family:var(--font-num);font-weight:700;font-size:22px;padding:13px 0;border:1.5px solid var(--navy);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--navy);color:var(--on-navy)}
+.tz.big .r{font-size:46px}
+details.stop-box summary{color:var(--high);font-weight:700;font-size:15px;cursor:pointer}
+details.stop-box[open] summary{margin-bottom:6px}
 @media (prefers-reduced-motion:no-preference){.verdict{animation:pop .18s ease-out}@keyframes pop{from{transform:scale(.98);opacity:.6}to{transform:none;opacity:1}}}
 </style>
 
@@ -217,8 +227,14 @@ body.field .teach{display:none}
   <header>
     <div class="eyebrow">練健康｜教練用工具</div>
     <h1>目標心率與現場強度判斷</h1>
-    <p>輸入學員資料算出目標心率，訓練中用 1–10 分判斷強度。教學模式會顯示完整計算過程。</p>
+    <p>上方切換心率、有氧、肌力。教學模式會顯示完整計算過程。</p>
   </header>
+
+  <div class="seg-ctl tab-ctl" role="group" aria-label="功能">
+    <button type="button" id="tabHr" aria-pressed="true">心率</button>
+    <button type="button" id="tabAer" aria-pressed="false">有氧</button>
+    <button type="button" id="tabStr" aria-pressed="false">肌力</button>
+  </div>
 
   <div class="seg-ctl mode-ctl" role="group" aria-label="顯示模式">
     <button type="button" id="mField" aria-pressed="true">現場模式</button>
@@ -226,7 +242,7 @@ body.field .teach{display:none}
   </div>
 
   <!-- INPUT -->
-  <section class="card" aria-labelledby="in-h">
+  <section class="card t-hr" aria-labelledby="in-h">
     <div class="sec-title"><h2 id="in-h">學員資料</h2></div>
     <div class="demo" id="demoNote" hidden><span>目前是範例：70 歲中風個案、有吃 β 阻斷劑、安靜心率 80</span><button type="button" id="clearDemo">清空，輸入我的學員</button></div>
     <div class="row2">
@@ -254,7 +270,7 @@ body.field .teach{display:none}
   </section>
 
   <!-- TARGET (field + teach summary) -->
-  <section class="card" aria-labelledby="tg-h">
+  <section class="card t-hr" aria-labelledby="tg-h">
     <div class="sec-title"><h2 id="tg-h">目標心率</h2></div>
     <div id="tgEmpty" class="empty">輸入年齡後，這裡會顯示中等與高強度的目標心率。</div>
     <div id="tgBody" hidden>
@@ -265,7 +281,7 @@ body.field .teach{display:none}
   </section>
 
   <!-- TEACH: STEP 1 -->
-  <section class="card teach" id="s1" aria-labelledby="s1-h">
+  <section class="card t-hr teach" id="s1" aria-labelledby="s1-h">
     <div class="sec-title"><span class="step">①</span><h2 id="s1-h">先找最大心率</h2></div>
     <ol class="path" id="path">
       <li data-k="measured"><span class="tag">1</span><div><div class="q">有做最大運動測試？</div><div class="f">直接用測到的數值</div></div></li>
@@ -276,7 +292,7 @@ body.field .teach{display:none}
   </section>
 
   <!-- TEACH: STEP 2 -->
-  <section class="card teach" id="s2" aria-labelledby="s2-h">
+  <section class="card t-hr teach" id="s2" aria-labelledby="s2-h">
     <div class="sec-title"><span class="step">②</span><h2 id="s2-h">再算目標心率</h2></div>
     <div id="s2Empty" class="empty">輸入年齡後顯示兩種算法的比較。</div>
     <div id="s2Body" style="display:grid;gap:14px" hidden>
@@ -292,73 +308,78 @@ body.field .teach{display:none}
   </section>
 
   <!-- TEACH: WEEKLY -->
-  <section class="card teach" aria-labelledby="wk-h">
+  <section class="card t-hr teach" aria-labelledby="wk-h">
     <div class="sec-title"><h2 id="wk-h">每週建議量</h2></div>
     <div class="week" id="week"></div>
   </section>
 
   <!-- FIELD JUDGEMENT -->
-  <section class="card" aria-labelledby="tt-h">
+  <section class="card t-jd" aria-labelledby="tt-h">
     <div class="sec-title"><h2 id="tt-h">現場強度判斷</h2></div>
-    <div>
-      <div class="field">
-        <label for="hrNow">當下心率（選填）</label>
-        <input id="hrNow" type="number" inputmode="numeric" min="40" max="230" placeholder="下／分">
-      </div>
-    </div>
-    <div class="row2">
-      <div class="field">
-        <span class="lab">訓練類型</span>
-        <div class="seg-ctl" role="group" aria-label="訓練類型">
-          <button type="button" id="tAer" aria-pressed="true">有氧</button>
-          <button type="button" id="tStr" aria-pressed="false">肌力</button>
-        </div>
-      </div>
-      <div class="field">
-        <span class="lab">今日目標</span>
-        <div class="seg-ctl" role="group" aria-label="今日目標強度">
-          <button type="button" id="gMod" aria-pressed="true">中等 5–6</button>
-          <button type="button" id="gVig" aria-pressed="false">高強度 7–8</button>
-        </div>
+    <div class="field">
+      <span class="lab">今日目標</span>
+      <div class="seg-ctl" role="group" aria-label="今日目標強度">
+        <button type="button" id="gMod" aria-pressed="true">中等 5–6</button>
+        <button type="button" id="gVig" aria-pressed="false">高強度 7–8</button>
       </div>
     </div>
     <span class="hint" id="goalHint"></span>
-    <div class="note plain" id="timing"></div>
-    <div class="script" id="script">
+    <div class="script a-only">
       <span class="k">直接問學員</span>
       <p id="askQ"></p>
-      <span class="k" id="askN"></span>
+      <span class="k a-only" id="askN"></span>
     </div>
-    <div class="note" id="speechNote" hidden><b>中風個案注意</b>有失語或構音困難時，講不出話可能是語言障礙而不是喘，不要用說話判斷，改用心率，或請學員用手指比 1–10 分。</div>
-    <div class="field">
+    <div class="note a-only" id="speechNote" hidden><b>中風個案注意</b>有失語或構音困難時，講不出話可能是語言障礙而不是喘，不要用說話判斷，改用心率，或請學員用手指比 1–10 分。</div>
+
+    <div class="field a-only">
+      <label for="hrNow">當下心率（選填）</label>
+      <input id="hrNow" type="number" inputmode="numeric" min="40" max="230" placeholder="下／分">
+    </div>
+    <div class="field a-only">
       <span class="lab">現在是幾分？</span>
       <div class="lvls" role="group" aria-label="強度分級" id="lvls"></div>
-      <span class="hint">照學員的回答點，點了就會記錄。分數 ＋ 還能再做幾下 ＝ 10。</span>
+      <span class="hint">照學員的回答點，點了就會記錄。</span>
     </div>
+
+    <div class="pair s-only">
+      <div class="field"><label for="sxW">重量（公斤）</label><input id="sxW" type="number" inputmode="decimal" min="0.5" step="0.5" placeholder="選填"></div>
+      <div class="field"><label for="sxR">做了幾下</label><input id="sxR" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="選填"></div>
+    </div>
+    <div class="field s-only">
+      <span class="lab">問學員：「還能再做幾下？」</span>
+      <div class="chips" role="group" aria-label="還能再做幾下" id="sxChips"></div>
+      <span class="hint">有重量先填上面兩格，再點下數；點了就會記錄。</span>
+    </div>
+
     <div class="verdict" id="verdict" hidden><span class="t" id="vT"></span><span class="d" id="vD"></span></div>
-    <div class="load-box" id="loadBox" hidden>
-      <h3>重量換算</h3>
-      <span class="hint">填這一組的結果，算出推估 1RM 和下一組該放多重。</span>
-      <div class="row3">
-        <div class="field"><label for="ldW">重量（公斤）</label><input id="ldW" type="number" inputmode="decimal" min="0.5" step="0.5"></div>
-        <div class="field"><label for="ldR">做了幾下</label><input id="ldR" type="number" inputmode="numeric" min="1" max="15" step="1"></div>
-        <div class="field"><label for="ldRir">還能再做幾下</label><input id="ldRir" type="number" inputmode="decimal" min="0" max="10" step="0.5"></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label for="ldTR">下一組做幾下</label><input id="ldTR" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="同這組"></div>
-        <div class="field"><label for="ldTRir">下一組保留幾下</label><input id="ldTRir" type="number" inputmode="decimal" min="0" max="10" step="0.5"></div>
-      </div>
-      <div class="field"><span class="lab">重量級距（公斤，器材一格多少）</span>
-        <div class="seg-ctl" role="group" aria-label="重量級距" id="ldStep">
-          <button type="button" data-s="0.5" aria-pressed="true">0.5</button><button type="button" data-s="1" aria-pressed="false">1</button><button type="button" data-s="2.5" aria-pressed="false">2.5</button><button type="button" data-s="5" aria-pressed="false">5</button>
+
+    <div class="err s-only" id="sxErr" hidden></div>
+    <div class="tz big s-only" id="sxOut" hidden></div>
+    <details class="xwalk s-only" id="sxMore" hidden>
+      <summary>更多：推估 1RM、肌力與爆發力重量</summary>
+      <div class="inner" id="sxMoreIn"></div>
+    </details>
+    <details class="xwalk s-only">
+      <summary>調整：下一組目標、重量級距</summary>
+      <div class="inner">
+        <div class="row2">
+          <div class="field"><label for="sxTR">下一組做幾下</label><input id="sxTR" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="同這組"></div>
+          <div class="field"><label for="sxTRir">下一組保留幾下</label><input id="sxTRir" type="number" inputmode="decimal" min="0" max="10" step="0.5"></div>
+        </div>
+        <div class="field"><span class="lab">重量級距（公斤，器材一格多少）</span>
+          <div class="seg-ctl" role="group" aria-label="重量級距" id="sxStep">
+            <button type="button" data-s="0.5">0.5</button><button type="button" data-s="1">1</button><button type="button" data-s="2.5">2.5</button><button type="button" data-s="5">5</button>
+          </div>
         </div>
       </div>
-      <div class="err" id="ldErr" hidden></div>
-      <div class="load-out" id="ldOut" hidden></div>
-      <button type="button" class="btn solid" id="ldSave" hidden>記錄這一組</button>
-    </div>
-    <div class="stop-box">
-      <b>出現以下狀況，立刻停止運動</b>
+    </details>
+
+    <details class="xwalk">
+      <summary>什麼時候判斷</summary>
+      <div class="inner"><p id="timing"></p></div>
+    </details>
+    <details class="stop-box">
+      <summary>出現這些狀況，立刻停止運動（點開看）</summary>
       <ul>
         <li>胸痛或胸悶，或胸痛越來越明顯</li>
         <li>頭暈、快昏倒、走路不穩</li>
@@ -367,7 +388,7 @@ body.field .teach{display:none}
         <li>學員要求停下來</li>
       </ul>
       <span class="hint">異常喘、喘鳴聲、腿抽筋或明顯疲勞：先降低強度，沒改善就停止。</span>
-    </div>
+    </details>
     <div class="log">
       <div class="log-head">
         <h3>這支手機的紀錄</h3>
@@ -624,16 +645,13 @@ function renderJudge(){
   if (stroke) state.goal = "mod";
   $("gVig").disabled = stroke;
   $("gMod").setAttribute("aria-pressed", state.goal==="mod"); $("gVig").setAttribute("aria-pressed", state.goal==="vig");
-  $("tAer").setAttribute("aria-pressed", state.type==="aer"); $("tStr").setAttribute("aria-pressed", state.type==="str");
   const aer = state.type === "aer";
   $("askQ").innerHTML = aer ? "「1 到 10 分，現在幾分累？」<br>「知道現在在哪裡嗎？」" : "「還能再做幾下？」";
-  $("askN").textContent = aer
-    ? "聽他的回答講得出幾個字，就是說話表現；答不清楚或答非所問，立刻停止。（教練實務）"
-    : "分數 ＝ 10 − 還能再做幾下。也可以直接問「1 到 10 分，幾分累？」";
+  $("askN").textContent = "聽他的回答講得出幾個字，就是說話表現；答不清楚或答非所問，立刻停止。（教練實務）";
   $("speechNote").hidden = !(aer && stroke);
   $("timing").innerHTML = aer
-    ? `<b>什麼時候判斷</b>同一強度持續 3–5 分鐘、呼吸穩定後再判斷；間歇訓練在每一段做完前判斷。（教練實務）`
-    : `<b>什麼時候判斷</b>每一組做完當下問：「還能再做幾下？」一般人平均會少估約 1 下；長者的研究資料少，搭配看動作有沒有變慢、走樣。`;
+    ? `同一強度持續 3–5 分鐘、呼吸穩定後再判斷；間歇訓練在每一段做完前判斷。（教練實務）`
+    : `每一組做完當下問：「還能再做幾下？」一般人平均會少估約 1 下；長者的研究資料少，搭配看動作有沒有變慢、走樣。`;
   $("lvls").classList.toggle("warn", aer || stroke);
   let hint = "";
   if (state.res && aer){
@@ -648,65 +666,87 @@ function renderJudge(){
   for (const lv of [1,2,3,4]) b += `<button type="button" data-l="${lv}"><span class="sc num">${bd.score[lv]}</span><span class="tx"><b>${LV[lv]}</b><span>${aer?"有氧":"肌力"}：${bd.desc[state.type][lv]}</span></span></button>`;
   $("lvls").innerHTML = b;
   document.querySelectorAll("#lvls button").forEach(x => x.onclick = () => judge(Number(x.dataset.l), x));
-  if (typeof renderLoad === "function") renderLoad();
+  renderStr();
 }
-$("gMod").onclick = () => { state.goal="mod"; $("verdict").hidden = true; renderJudge(); };
-$("gVig").onclick = () => { state.goal="vig"; $("verdict").hidden = true; renderJudge(); };
-$("tAer").onclick = () => { state.type="aer"; $("verdict").hidden = true; renderJudge(); };
-$("tStr").onclick = () => { state.type="str"; $("verdict").hidden = true; renderJudge(); };
+$("gMod").onclick = () => { state.goal="mod"; $("verdict").hidden = true; resetStr(); renderJudge(); };
+$("gVig").onclick = () => { state.goal="vig"; $("verdict").hidden = true; resetStr(); renderJudge(); };
 
-// ----- 重量換算（肌力）
-const ld = { w:$("ldW"), r:$("ldR"), rir:$("ldRir"), tr:$("ldTR"), trir:$("ldTRir") };
-let ldStep = 0.5, ldLast = null;
+// ----- 肌力：還能再做幾下（判讀）＋重量換算，合在一起
+const sx = { w:$("sxW"), r:$("sxR"), tr:$("sxTR"), trir:$("sxTRir") };
+let sxStep = Number(store.get("lkk-step", 0.5)) || 0.5, sxRir = null, sxEntryT = null;
 const kg = x => (Math.round(x*10)/10).toFixed(1).replace(/\.0$/, "");
 const defaultTRir = () => (state.inp && state.inp.stroke) ? 5 : (state.goal === "vig" ? 2 : 4);
-function renderLoad(){
-  $("loadBox").hidden = state.type !== "str";
-  ld.trir.placeholder = `預設 ${defaultTRir()}`;
+// same bands as DESC / DESC_S above
+const rirLevel = (rir, stroke) => stroke ? (rir<=1?4 : rir<=4?3 : rir<=6?2 : 1) : (rir<=1?4 : rir<=3?3 : rir<=5?2 : 1);
+function resetStr(){ sxRir = null; sxEntryT = null; }
+function renderStr(){
+  let c = "";
+  for (let i = 0; i <= 7; i++) c += `<button type="button" data-r="${i}" aria-pressed="${sxRir===i}">${i===7?"7+":i}</button>`;
+  $("sxChips").innerHTML = c;
+  document.querySelectorAll("#sxChips button").forEach(b => b.onclick = () => pickRir(Number(b.dataset.r)));
+  document.querySelectorAll("#sxStep button").forEach(b => b.setAttribute("aria-pressed", Number(b.dataset.s) === sxStep));
+  sx.trir.placeholder = `預設 ${defaultTRir()}`;
+  const out = $("sxOut"), more = $("sxMore"), err = $("sxErr");
+  const hide = msg => { out.hidden = true; more.hidden = true; err.hidden = !msg; err.textContent = msg || ""; };
+  if (state.type !== "str") return null;
+  if (sxRir == null){ hide(""); return null; }
+  const stroke = !!(state.inp && state.inp.stroke), g = stroke ? "stroke" : state.goal;
+  const lv = rirLevel(sxRir, stroke), [t, d, cls] = FEEDBACK.str[g][lv];
+  const v = $("verdict"); v.hidden = false; v.className = "verdict " + cls;
+  $("vT").textContent = `還能再做 ${sxRir===7?"7 下以上":sxRir+" 下"}｜${t}`; $("vD").textContent = d;
+  const res = { lv, t, cls, stroke, load:null };
   const num = e => e.value.trim() === "" ? null : Number(e.value);
-  const w = num(ld.w), r = num(ld.r), rir = num(ld.rir);
-  const out = $("ldOut"), err = $("ldErr"); ldLast = null;
-  const fail = msg => { out.hidden = true; $("ldSave").hidden = true; err.hidden = !msg; err.textContent = msg || ""; };
-  if (w == null || r == null || rir == null) return fail("");
-  const tr = num(ld.tr) ?? r, trir = num(ld.trir) ?? defaultTRir();
-  const half = x => Number.isInteger(x*2);
-  if (!(w > 0)) return fail("重量請輸入大於 0 的數字。");
-  if (!Number.isInteger(r) || r < 1 || !Number.isInteger(tr) || tr < 1) return fail("次數請輸入 1 以上的整數。");
-  if (rir < 0 || trir < 0 || !half(rir) || !half(trir)) return fail("保留次數請輸入 0 以上，最小單位 0.5。");
-  if (r + rir > LOAD_MAX) return fail(`次數加保留次數超過 ${LOAD_MAX} 下，推估不準，不計算。請換重一點、做少一點再測。`);
-  if (tr + trir > LOAD_MAX) return fail(`下一組的次數加保留次數超過 ${LOAD_MAX} 下，不計算。`);
-  const c = calcLoad(w, r, rir, tr, trir, ldStep);
-  let h = `<div class="targets">
-    <div class="tz"><span class="k">下一組放（做 ${tr} 下、保留 ${kg(trir)} 下）</span><span class="r">${kg(c.next)}<small>公斤</small></span><span class="w">未進位 ${c.raw.toFixed(1)} 公斤</span></div>
-    <div class="tz vig"><span class="k">推估 1RM</span><span class="r">${c.e1rm.toFixed(1)}<small>公斤</small></span><span class="w">這組約 ${kg(c.pct)}% 1RM</span></div>
-  </div>
-  <div class="targets">
-    <div class="tz vig"><span class="k">練肌力（70–85% 1RM）</span><span class="r">${kg(c.str[0])}–${kg(c.str[1])}<small>公斤</small></span></div>
-    <div class="tz vig"><span class="k">練爆發力（40–60% 1RM）</span><span class="r">${kg(c.pow[0])}–${kg(c.pow[1])}<small>公斤</small></span><span class="w">做快，動作變慢就停</span></div>
-  </div>`;
+  const w = num(sx.w), r = num(sx.r);
+  if (w == null && r == null){ hide(""); return res; }
+  if (w == null || r == null){ hide("要算下一組重量，重量和做了幾下都要填。"); return res; }
+  const tr = num(sx.tr) ?? r, trir = num(sx.trir) ?? defaultTRir(), half = x => Number.isInteger(x*2);
+  if (!(w > 0)){ hide("重量請輸入大於 0 的數字。"); return res; }
+  if (!Number.isInteger(r) || r < 1 || !Number.isInteger(tr) || tr < 1){ hide("次數請輸入 1 以上的整數。"); return res; }
+  if (trir < 0 || !half(trir)){ hide("保留次數請輸入 0 以上，最小單位 0.5。"); return res; }
+  if (r + sxRir > LOAD_MAX){ hide(`做的次數加還能再做的次數超過 ${LOAD_MAX} 下，推估不準，不算重量。請換重一點、做少一點再測。`); return res; }
+  if (tr + trir > LOAD_MAX){ hide(`下一組的次數加保留次數超過 ${LOAD_MAX} 下，不算重量。`); return res; }
+  const k = calcLoad(w, r, sxRir, tr, trir, sxStep);
+  out.innerHTML = `<span class="k">下一組放</span><span class="r">${kg(k.next)}<small>公斤</small></span><span class="w">做 ${tr} 下、保留 ${kg(trir)} 下｜未進位 ${k.raw.toFixed(1)} 公斤</span>`;
   const notes = [];
-  if (c.rtf > LOAD_WARN) notes.push(`次數加保留次數超過 ${LOAD_WARN} 下，推估誤差變大。`);
-  if (rir >= 5) notes.push("保留 5 下以上時，學員通常估得比較不準。");
-  h += `<div class="note plain"><b>推估值</b>${notes.join("")}實際以學員反應與動作品質為準；長者請搭配看動作有沒有變慢、走樣。</div>`;
-  out.innerHTML = h; out.hidden = false; err.hidden = true; $("ldSave").hidden = false;
-  ldLast = { w, r, rir, tr, trir, c };
+  if (k.rtf > LOAD_WARN) notes.push(`做的次數加還能再做的次數超過 ${LOAD_WARN} 下，推估誤差變大。`);
+  if (sxRir >= 5) notes.push("還能再做 5 下以上時，學員通常估得比較不準。");
+  $("sxMoreIn").innerHTML = `<div class="targets">
+    <div class="tz vig"><span class="k">推估 1RM</span><span class="r">${k.e1rm.toFixed(1)}<small>公斤</small></span><span class="w">這組約 ${kg(k.pct)}% 1RM</span></div>
+    <div class="tz vig"><span class="k">練肌力（70–85% 1RM）</span><span class="r">${kg(k.str[0])}–${kg(k.str[1])}<small>公斤</small></span></div>
+    <div class="tz vig"><span class="k">練爆發力（40–60% 1RM）</span><span class="r">${kg(k.pow[0])}–${kg(k.pow[1])}<small>公斤</small></span><span class="w">做快，動作變慢就停</span></div>
+  </div><p>推估值。${notes.join("")}實際以學員反應與動作品質為準；長者請搭配看動作有沒有變慢、走樣。</p>`;
+  out.hidden = false; more.hidden = false; err.hidden = true;
+  res.load = { w, reps:r, rir:sxRir, e1rm:Math.round(k.e1rm*10)/10, pct:k.pct, next:k.next, tReps:tr, tRir:trir, step:sxStep, velocity:null };
+  return res;
 }
-Object.values(ld).forEach(e => e.addEventListener("input", renderLoad));
-document.querySelectorAll("#ldStep button").forEach(b => b.onclick = () => {
-  ldStep = Number(b.dataset.s);
-  document.querySelectorAll("#ldStep button").forEach(x => x.setAttribute("aria-pressed", x === b));
-  renderLoad();
-});
-$("ldSave").onclick = () => {
-  if (!ldLast) return;
-  const { w, r, rir, tr, trir, c } = ldLast, stroke = !!(state.inp && state.inp.stroke);
-  const l = loadLog();
-  l.push({ t:new Date().toISOString(), type:"肌力", goal: stroke ? "中等（中風）" : (state.goal==="vig"?"高強度":"中等"),
-    score:kg(10 - rir), level:`保留 ${kg(rir)} 下`, hr:"", verdict:`下一組 ${kg(c.next)} 公斤`, cls:"ok",
-    load:{ w, reps:r, rir, e1rm:Math.round(c.e1rm*10)/10, pct:c.pct, next:c.next, tReps:tr, tRir:trir, step:ldStep, velocity:null } });
-  saveLog(l); renderLog();
-  $("ldSave").textContent = "已記錄"; setTimeout(() => { $("ldSave").textContent = "記錄這一組"; }, 1500);
-};
+function strEntry(res, t){
+  return { t, type:"肌力", goal: res.stroke ? "中等（中風）" : (state.goal==="vig"?"高強度":"中等"),
+    score:bands(res.stroke).score[res.lv], level:LV[res.lv], hr:"", verdict:res.t, cls:res.cls, load:res.load };
+}
+function pickRir(n){
+  sxRir = n; const res = renderStr(); if (!res) return;
+  ($("sxOut").hidden ? $("verdict") : $("sxOut")).scrollIntoView({ block:"nearest", behavior:"smooth" });
+  sxEntryT = new Date().toISOString();
+  const l = loadLog(); l.push(strEntry(res, sxEntryT)); saveLog(l); renderLog();
+}
+// Changing the set (weight / reps) starts a new set: clear the answer so the coach taps it again.
+function newSet(){ resetStr(); $("verdict").hidden = true; renderStr(); }
+function refreshStr(){
+  const res = renderStr(); if (!res || !sxEntryT) return;
+  const l = loadLog(), i = l.findIndex(e => e.t === sxEntryT);
+  if (i >= 0){ l[i] = strEntry(res, sxEntryT); saveLog(l); renderLog(); }
+}
+sx.w.addEventListener("input", newSet); sx.r.addEventListener("input", newSet);
+sx.tr.addEventListener("input", refreshStr); sx.trir.addEventListener("input", refreshStr);
+document.querySelectorAll("#sxStep button").forEach(b => b.onclick = () => { sxStep = Number(b.dataset.s); store.set("lkk-step", sxStep); refreshStr(); });
+
+function setTab(t){
+  state.tab = t; document.body.dataset.tab = t;
+  for (const k of ["Hr","Aer","Str"]) $("tab"+k).setAttribute("aria-pressed", t === k.toLowerCase());
+  if (t !== "hr") state.type = t;
+  $("verdict").hidden = true; resetStr(); store.set("lkk-tab", t); renderJudge();
+}
+$("tabHr").onclick = () => setTab("hr"); $("tabAer").onclick = () => setTab("aer"); $("tabStr").onclick = () => setTab("str");
 
 const KEY = "lkk-talktest-log-v3";
 let memLog = [];
@@ -760,6 +800,7 @@ Object.values(el).forEach(e => e.addEventListener("input", () => { $("demoNote")
 
 if (location.hash === "#demo"){ loadDemo(); setMode("teach"); } else setMode(store.get("lkk-mode", "field"));
 render(); renderLog();
+setTab(location.hash === "#demo" ? "hr" : (t => ["hr","aer","str"].includes(t) ? t : "hr")(store.get("lkk-tab", "hr")));
 </script>
 
 </body>
