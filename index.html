@@ -3,11 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>目標心率與說話測試｜練健康</title>
+<meta name="description" content="練健康教練用工具：輸入學員資料算出目標心率，訓練中用 1–10 分判斷有氧與肌力強度。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B3A4E'/%3E%3Cpath d='M32 50s-18-10.5-18-23a10 10 0 0 1 18-6 10 10 0 0 1 18 6c0 12.5-18 23-18 23z' fill='%23D9762B'/%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
-</head>
-<body>
-<title>目標心率與說話測試</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
@@ -226,6 +225,8 @@ details.stop-box summary{color:var(--high);font-weight:700;font-size:15px;cursor
 details.stop-box[open] summary{margin-bottom:6px}
 @media (prefers-reduced-motion:no-preference){.verdict{animation:pop .18s ease-out}@keyframes pop{from{transform:scale(.98);opacity:.6}to{transform:none;opacity:1}}}
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header>
@@ -233,6 +234,11 @@ details.stop-box[open] summary{margin-bottom:6px}
     <h1>目標心率與現場強度判斷</h1>
     <p>選有氧或肌力，照學員的回答點，馬上知道要加、維持還是減。</p>
   </header>
+
+  <div class="seg-ctl mode-ctl" role="group" aria-label="顯示模式">
+    <button type="button" id="mField" aria-pressed="true">現場模式</button>
+    <button type="button" id="mTeach" aria-pressed="false">教學模式（顯示計算過程）</button>
+  </div>
 
   <!-- INPUT -->
   <details class="card setup" id="setup">
@@ -281,6 +287,39 @@ details.stop-box[open] summary{margin-bottom:6px}
     <div class="notes" id="notes"></div>
   </section>
 
+  <!-- TEACH: STEP 1 -->
+  <section class="card teach t-aer" id="s1" aria-labelledby="s1-h">
+    <div class="sec-title"><span class="step">①</span><h2 id="s1-h">先找最大心率</h2></div>
+    <ol class="path" id="path">
+      <li data-k="measured"><span class="tag">1</span><div><div class="q">有做最大運動測試？</div><div class="f">直接用測到的數值</div></div></li>
+      <li data-k="beta"><span class="tag">2</span><div><div class="q">有吃 β 阻斷劑？</div><div class="f">164 − 0.7 × 年齡</div></div></li>
+      <li data-k="general"><span class="tag">3</span><div><div class="q">以上都沒有</div><div class="f">220 − 年齡</div></div></li>
+    </ol>
+    <div class="big" id="hmBig"><span class="v" id="hrmax">—</span><span class="u">下／分</span><span class="calc" id="hrmaxCalc"></span></div>
+  </section>
+
+  <!-- TEACH: STEP 2 -->
+  <section class="card teach t-aer" id="s2" aria-labelledby="s2-h">
+    <div class="sec-title"><span class="step">②</span><h2 id="s2-h">再算目標心率</h2></div>
+    <div id="s2Empty" class="empty">輸入年齡後顯示兩種算法的比較。</div>
+    <div id="s2Body" style="display:grid;gap:14px" hidden>
+      <p class="sub" id="setName"></p>
+      <div class="methods">
+        <div class="m hrr"><h3>心率儲備法（HRR）</h3><div class="body" id="hrrBody"></div></div>
+        <div class="m max"><h3>最大心率百分比（%HRmax）</h3><div class="body" id="maxBody"></div></div>
+      </div>
+      <div class="diff" id="diff"></div>
+      <div class="chart" id="chart" aria-hidden="true"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <!-- TEACH: WEEKLY -->
+  <section class="card teach t-aer" aria-labelledby="wk-h">
+    <div class="sec-title"><h2 id="wk-h">每週建議量</h2></div>
+    <div class="week" id="week"></div>
+  </section>
+
   <!-- FIELD JUDGEMENT -->
   <section class="card" aria-labelledby="tt-h">
     <div class="sec-title"><h2 id="tt-h">現場強度判斷</h2></div>
@@ -324,6 +363,25 @@ details.stop-box[open] summary{margin-bottom:6px}
       <div class="inner" id="sxMoreIn"></div>
     </details>
 
+    <details class="xwalk teach">
+      <summary>這把尺怎麼來的</summary>
+      <div class="inner">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>分數</th><th>強度</th><th>有氧：說話</th><th>肌力：RIR</th><th>Borg 6–20</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1–4*</td><td>輕度</td><td>可以輕鬆聊天</td><td class="num">6–9*</td><td class="num">9–11</td></tr>
+            <tr><td class="num">5–6</td><td>中等</td><td>說得出完整句子</td><td class="num">4–5</td><td class="num">12–13</td></tr>
+            <tr><td class="num">7–8</td><td>高強度</td><td>只能說幾個字</td><td class="num">2–3</td><td class="num">14–17</td></tr>
+            <tr><td class="num">9–10*</td><td>最大</td><td>講不出話或只講 1–2 個字*</td><td class="num">0–1</td><td class="num">≥18</td></tr>
+          </tbody>
+        </table></div>
+        <p>有氧：說話表現依 CDC；5–6、7–8 分依 WHO 2020 與 CDC 的自覺量表；Borg 欄依 ACSM 第 12 版表 5.2。WHO 和 CDC 的量表是 0–10（CDC 定義 0 是靜坐），RIR 量表是 1–10，這裡統一用 1–10。</p>
+        <p>中風／心血管模式：依 AEROBICS 2019（MacKay-Lyons et al., 2020），中等強度是 0–10 量表 4–5 分（Borg 12–13），所以按鈕改成 1–3／4–5／6–8／9–10，RIR 同樣用相加等於 10。</p>
+        <p>肌力：分數 ＋ RIR ＝ 10。7–10 分與 Zourdos et al., 2016 的 RIR 版 RPE 相同；原量表 5–6 分寫「還剩 4–6 下」、1–4 分只寫「輕鬆」，這裡統一用相加等於 10 推算。</p>
+        <p>RIR 準確度：統合分析顯示，一般人平均會少估約 1 下；離力竭越近、每組次數越少（12 下以內）估得越準；訓練經驗的影響不大；研究對象多是健康成人，長者資料很少（Halperin et al., 2022）。推論：1–4 分離力竭最遠，RIR 最不準；長者建議搭配教練觀察動作變慢、動作走樣（教練實務）。</p>
+        <p>* 輕度 1–4 分、最大 9–10 分與「講不出話」是教練現場常用判斷或推論，不是指引的定義。有氧和肌力共用同一把尺是為了現場好溝通，研究上沒有證明兩邊同分數代表相同的生理負荷。</p>
+      </div>
+    </details>
     <details class="xwalk">
       <summary>什麼時候判斷</summary>
       <div class="inner"><p id="timing"></p></div>
@@ -438,11 +496,20 @@ window.__calc = { calcZones, calcHRmax, calcLoad, pct1RM };
 // ===== UI =====
 const $ = id => document.getElementById(id);
 const el = { age:$("age"), rhr:$("rhr"), measured:$("measured"), beta:$("beta"), stroke:$("stroke") };
-const state = { res:null, inp:null, goal:"mod", type:"aer" };
+const state = { res:null, inp:null, goal:"mod", type:"aer", mode:"field" };
 const store = {
   get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(e){ return d; } },
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
 };
+
+// 現場模式（預設）／教學模式（顯示計算過程、每週建議量、量表來源）
+function setMode(m){
+  state.mode = m; document.body.classList.toggle("field", m === "field");
+  $("mField").setAttribute("aria-pressed", m === "field"); $("mTeach").setAttribute("aria-pressed", m === "teach");
+  store.set("lkk-mode", m);
+}
+$("mField").onclick = () => setMode("field");
+$("mTeach").onclick = () => setMode("teach");
 
 
 function readInput(){
@@ -460,8 +527,11 @@ function readInput(){
 }
 
 
+const zoneHTML = (label, r, w) => `<div class="zone"><span class="k">${label}</span><span class="r">${r[0]}–${r[1]}<small>下／分</small></span><span class="w">${w}</span></div>`;
+
 function showResults(on){
   $("tgEmpty").hidden = on; $("tgBody").hidden = !on;
+  $("s2Empty").hidden = on; $("s2Body").hidden = !on;
 }
 
 function render(){
@@ -469,8 +539,10 @@ function render(){
   state.inp = inp; state.res = null; $("verdict").hidden = true;
   $("err").hidden = !errs.length; $("err").textContent = errs.join(" ");
   renderSetup(inp);
+  renderWeek(inp);
   if (empty || errs.length){
-    showResults(false); $("notes").innerHTML = "";
+    showResults(false); $("notes").innerHTML = ""; $("hrmax").textContent = "—"; $("hrmaxCalc").textContent = "";
+    document.querySelectorAll("#path li").forEach(li => li.classList.remove("on"));
     renderJudge(); return;
   }
   const res = calcZones(inp); state.res = res; showResults(true);
@@ -483,6 +555,29 @@ function render(){
   $("targets").innerHTML = t;
   $("tgMeta").innerHTML = `最大心率 <b>${res.hm.v}</b>（${res.hm.calc}）｜${useHRR?"心率儲備法":"最大心率百分比（填安靜心率可改用心率儲備法）"}｜${inp.stroke?"中風指引區間":"ACSM 區間"}`;
 
+  // teach step 1
+  document.querySelectorAll("#path li").forEach(li => li.classList.toggle("on", li.dataset.k === res.hm.src));
+  $("hrmax").textContent = res.hm.v; $("hrmaxCalc").textContent = res.hm.calc;
+
+  // teach step 2
+  $("setName").textContent = "使用區間：" + s.name;
+  if (useHRR){
+    let h = `<div class="formula">（${res.hm.v} − ${inp.rhr}）× 強度 ＋ ${inp.rhr}</div>`;
+    h += zoneHTML("中等 "+pct(s.mod.hrr), res.mod.hrr, `${res.hrr} × ${pct(s.mod.hrr)} ＋ ${inp.rhr}`);
+    if (res.vig) h += zoneHTML("高強度 "+pct(s.vig.hrr), res.vig.hrr, `${res.hrr} × ${pct(s.vig.hrr)} ＋ ${inp.rhr}`);
+    $("hrrBody").innerHTML = h;
+  } else $("hrrBody").innerHTML = `<div class="none">填入安靜心率後才能用這個算法，它有納入每個人的安靜心率。</div>`;
+  let m = `<div class="formula">${res.hm.v} × 強度</div>`;
+  m += zoneHTML("中等 "+pct(s.mod.max), res.mod.max, `${res.hm.v} × ${pct(s.mod.max)}`);
+  if (res.vig) m += zoneHTML("高強度 "+pct(s.vig.max), res.vig.max, `${res.hm.v} × ${pct(s.vig.max)}`);
+  $("maxBody").innerHTML = m;
+  if (useHRR){
+    const d1 = Math.abs(res.mod.hrr[0]-res.mod.max[0]), d2 = Math.abs(res.mod.hrr[1]-res.mod.max[1]);
+    const lo = Math.min(d1,d2), hi = Math.max(d1,d2);
+    $("diff").textContent = `同一個人，中等強度兩種算法差了 ${lo===hi?lo:lo+"–"+hi} 下`;
+  } else $("diff").textContent = "";
+  renderChart(res, inp);
+
   // notes (both modes)
   const notes = [];
   if (inp.beta && !inp.measured) notes.push(`<div class="note"><b>有吃 β 阻斷劑</b>心率只是參考，請以學員的回答為主。164 − 0.7 × 年齡是用 40–80 歲、冠心病、服 β 阻斷劑的病人建立的，估計標準誤約 18 下${inp.age<40?"；這位學員未滿 40 歲，屬於外推":""}；沒有冠心病的人套用也屬於外推。</div>`);
@@ -491,6 +586,43 @@ function render(){
   if (!inp.beta && !inp.measured) notes.push(`<div class="note plain"><b>預估值</b>220 − 年齡在 40 歲以上可能低估最大心率（70 歲約低估 10 下，Tanaka et al., 2001），實際以學員反應為準。</div>`);
   $("notes").innerHTML = notes.join("");
   renderJudge();
+}
+
+function renderChart(res, inp){
+  const vals = [res.hm.v, res.mod.max[0]];
+  if (inp.rhr != null) vals.push(inp.rhr);
+  if (res.mod.hrr) vals.push(res.mod.hrr[0]);
+  const lo = Math.floor((Math.min(...vals)-5)/10)*10, hi = Math.ceil((Math.max(...vals)+5)/10)*10;
+  const P = v => ((v-lo)/(hi-lo)*100).toFixed(2)+"%";
+  const W = (a,b) => ((b-a)/(hi-lo)*100).toFixed(2)+"%";
+  const marks = () => (inp.rhr!=null?`<span class="mark" style="left:${P(inp.rhr)}"></span>`:"") + `<span class="mark" style="left:${P(res.hm.v)}"></span>`;
+  const segs = k => {
+    let h = `<span class="seg ${k} mod" style="left:${P(res.mod[k][0])};width:${W(res.mod[k][0],res.mod[k][1])}"></span>`;
+    if (res.vig && res.vig[k]) h += `<span class="seg ${k} vig" style="left:${P(res.vig[k][0])};width:${W(res.vig[k][0],res.vig[k][1])}"></span>`;
+    return h;
+  };
+  let h = `<div class="chart-row"><span></span><div class="marks-top">${inp.rhr!=null?`<span style="left:${P(inp.rhr)}">安靜 ${inp.rhr}</span>`:""}<span style="left:${P(res.hm.v)}">最大 ${res.hm.v}</span></div></div>`;
+  if (res.mod.hrr) h += `<div class="chart-row"><span class="lbl hrr">心率儲備法</span><div class="track">${marks()}${segs("hrr")}</div></div>`;
+  h += `<div class="chart-row"><span class="lbl">最大心率百分比</span><div class="track">${marks()}${segs("max")}</div></div>`;
+  let ticks = ""; const step = (hi-lo) > 100 ? 20 : 10;
+  for (let v=lo; v<=hi; v+=step) ticks += `<span style="left:${P(v)}">${v}</span>`;
+  h += `<div class="chart-row"><span class="lbl" style="font-weight:500;color:var(--muted)">心率（下／分）</span><div class="axis">${ticks}</div></div>`;
+  $("chart").innerHTML = h;
+  let lg = `<span><i style="background:var(--orange-soft);border:2px solid var(--orange)"></i>中等</span>`;
+  if (res.vig) lg += `<span><i style="background:var(--orange)"></i>高強度</span>`;
+  $("legend").innerHTML = lg + `<span>灰色為最大心率百分比法</span>`;
+}
+
+function renderWeek(inp){
+  const valid = Number.isInteger(inp.age) && inp.age >= 18 && inp.age <= 100;
+  const older = valid && inp.age >= 65, adult = valid && inp.age < 65;
+  let h = `<div class="grp ${adult?"on":""}"><h3>18–64 歲${adult?'<span class="you">這位學員</span>':""}</h3><ul>
+    <li>每週 150–300 分鐘中等強度，或 75–150 分鐘高強度，或兩者組合</li><li>每週 2 天以上肌力訓練</li></ul></div>
+  <div class="grp ${older?"on":""}"><h3>65 歲以上${older?'<span class="you">這位學員</span>':""}</h3><ul>
+    <li>同 18–64 歲的有氧與肌力建議</li><li>再加上每週 3 天以上、以平衡與肌力為主的多元訓練</li></ul></div>
+  <div class="note plain"><b>怎麼分配</b>ACSM 第 12 版表 5.1：每週至少 3 天，對多數成人來說，分散在 3–5 天可能最有助於達到建議量；中等強度每天 30–60 分鐘，高強度每天 20–60 分鐘。<br>換算參考：1 分鐘高強度約等於 2 分鐘中等（由建議量推算，WHO 原文只寫「等效組合」）。</div>`;
+  if (inp.stroke) h += `<div class="note"><b>中風或心血管疾病</b>以上是一般人的建議，運動量請依醫師建議與中風指引調整。</div>`;
+  $("week").innerHTML = h;
 }
 
 function renderSetup(inp){
@@ -624,7 +756,7 @@ $("clearDemo").onclick = () => {
 };
 Object.values(el).forEach(e => e.addEventListener("input", () => { $("demoNote").hidden = true; render(); }));
 
-if (location.hash === "#demo") loadDemo();
+if (location.hash === "#demo"){ loadDemo(); setMode("teach"); } else setMode(store.get("lkk-mode", "field") === "teach" ? "teach" : "field");
 render();
 setTab(location.hash === "#demo" ? "aer" : (store.get("lkk-tab", "aer") === "str" ? "str" : "aer"));
 $("setup").open = state.type === "aer" && el.age.value.trim() === "";
