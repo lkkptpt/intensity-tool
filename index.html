@@ -648,7 +648,7 @@ function renderJudge(){
   $("speechNote").hidden = !(aer && stroke);
   $("timing").innerHTML = aer
     ? `同一強度持續 3–5 分鐘、呼吸穩定後再判斷；間歇訓練在每一段做完前判斷。（教練實務）`
-    : `每一組做完當下問：「還能再做幾下？」一般人平均會少估約 1 下；長者的研究資料少，搭配看動作有沒有變慢、走樣。`;
+    : `每一組做完當下問：「還能再做幾下？」<br>學員通常會少講約 1 下（說還能做 2 下，其實常常還能做 3 下）。<br>長者的研究資料少，要再看最後幾下有沒有變慢、動作有沒有走樣。`;
   $("lvls").classList.toggle("warn", aer || stroke);
   let hint = "";
   if (state.res && aer){
